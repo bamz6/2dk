@@ -4,27 +4,27 @@ export const CATEGORIES: Category[] = [
   {
     id: 'windows',
     title: 'Windows',
-    description: 'Tools and plugins for Windows-based editing workflows.',
+    description: 'Software, tools, and plugins for Windows editors.',
     icon: 'monitor',
     section: 'SEC.01 // OS',
     tag: 'SYSTEM / CODECS',
     platform: 'windows',
-    badge: 'WINDOWS',
+    badge: 'DETECTED',
   },
   {
     id: 'macos',
     title: 'MacOS',
-    description: 'Native tools, encoders, and utilities optimized for Apple Silicon & macOS.',
+    description: 'Software, tools, and plugins for Mac editors.',
     icon: 'laptop',
     section: 'SEC.01 // OS',
     tag: 'METAL / NATIVE',
     platform: 'macos',
-    badge: 'MACOS',
   },
   {
     id: 'beginners-guide',
     title: "Beginner's Guide",
-    description: 'Start here. Essential setup, terminology, and first steps.',
+    description:
+      'Start here for After Effects setup, plugins, composition settings, and shortcuts.',
     icon: 'book-open',
     section: 'SEC.02 // ONBOARD',
     tag: 'FOUNDATION',
@@ -32,7 +32,8 @@ export const CATEGORIES: Category[] = [
   {
     id: 'tutorials',
     title: 'Tutorials',
-    description: 'Step-by-step walkthroughs for common editing tasks.',
+    description:
+      'Video walkthroughs for installs, plugins, setup, and common editor fixes.',
     icon: 'play',
     section: 'SEC.03 // PRACTICE',
     tag: 'TECHNIQUES',
@@ -40,7 +41,8 @@ export const CATEGORIES: Category[] = [
   {
     id: 'guides',
     title: 'Guides',
-    description: 'In-depth guides on color, audio, export, and more.',
+    description:
+      'Written setup, troubleshooting, activation, plugin, and workflow guides.',
     icon: 'file-text',
     section: 'SEC.04 // SPEC',
     tag: 'COLOR & STANDARDS',
@@ -48,7 +50,8 @@ export const CATEGORIES: Category[] = [
   {
     id: 'new-drops',
     title: 'New Drops',
-    description: 'Latest additions. Fresh tools posted this week.',
+    description:
+      'Latest software releases and updates, posted live from Discord.',
     icon: 'sparkles',
     section: 'SEC.05 // LOG',
     tag: 'COMMUNITY FEED',
@@ -56,25 +59,27 @@ export const CATEGORIES: Category[] = [
   {
     id: 'extensions-scripts',
     title: 'Extensions & Scripts',
-    description: 'Automation, presets, and workflow extensions.',
+    description: 'Extensions and scripts to push your workflow further.',
     icon: 'code',
     section: 'SEC.06 // SCRIPT',
     tag: 'AUTOMATION / AE',
   },
   {
-    id: 'free-assets',
-    title: 'Free Assets',
-    description: 'LUTs, overlays, transitions, sound effects — all free.',
-    icon: 'box',
-    section: 'SEC.07 // ASSETS',
-    tag: 'AUDIO & FOOTAGE',
-  },
-  {
     id: 'piracy',
-    title: 'Community Repos',
-    description: 'Verified megathreads, safety scanners, and community archives.',
+    title: 'Piracy',
+    description:
+      'Curated index — FMHY, torrents, repackers, streaming, books, safety tools.',
     icon: 'shield',
     section: 'SEC.08 // ARCHIVE',
     tag: 'HYGIENE & REPOS',
+  },
+  {
+    id: 'free-assets',
+    title: 'Free Assets',
+    description:
+      'SFX, music, fonts, footage, LUTs, 3D, icons, converters, and more — all free.',
+    icon: 'box',
+    section: 'SEC.07 // ASSETS',
+    tag: 'AUDIO & FOOTAGE',
   },
 ];

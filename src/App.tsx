@@ -15,6 +15,7 @@ import { ExtensionsScripts } from './components/ExtensionsScripts';
 import { NewDrops } from './components/NewDrops';
 import { About } from './components/About';
 import { FAQ } from './components/FAQ';
+import { WindowsPage } from './components/WindowsPage';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<PageId>('home');
@@ -132,6 +133,14 @@ export default function App() {
         );
 
       case 'windows':
+        return (
+          <WindowsPage
+            onBack={() => navigateTo('home')}
+            onNavigatePage={(page) => navigateTo(page as PageId)}
+            onOpenSearch={() => setIsSearchOpen(true)}
+          />
+        );
+
       case 'macos':
       case 'tutorials':
       case 'guides':
@@ -144,7 +153,12 @@ export default function App() {
         );
 
       case 'beginners-guide':
-        return <BeginnersGuide onBack={() => navigateTo('home')} />;
+        return (
+          <BeginnersGuide
+            onBack={() => navigateTo('home')}
+            onNavigatePage={(page) => navigateTo(page as PageId)}
+          />
+        );
 
       case 'free-assets':
         return <FreeAssets onBack={() => navigateTo('home')} />;
