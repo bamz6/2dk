@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <script>
+      (function() {
+        try {
+          var root = typeof window !== 'undefined' ? window : typeof globalThis !== 'undefined' ? globalThis : null;
+          if (!root) return;
+          var _fetch = typeof root.fetch === 'function' ? root.fetch.bind(root) : root.fetch;
+          try {
+            Object.defineProperty(root, 'fetch', {
+              get: function() {
+                return _fetch;
+              },
+              set: function(fn) {
+                _fetch = fn;
+              },
+              configurable: true,
+              enumerable: true
+            });
+          } catch (e) {}
+
+          if (typeof Window !== 'undefined' && Window.prototype) {
+            try {
+              var desc = Object.getOwnPropertyDescriptor(Window.prototype, 'fetch');
+              if (desc && !desc.set && desc.configurable) {
+                Object.defineProperty(Window.prototype, 'fetch', {
+                  get: function() {
+                    return _fetch;
+                  },
+                  set: function(fn) {
+                    _fetch = fn;
+                  },
+                  configurable: true,
+                  enumerable: desc.enumerable
+                });
+              }
+            } catch (e) {}
+          }
+        } catch (err) {}
+      })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>3DFX — Curated Tools & Resources for Video Editors</title>
+    <meta name="description" content="Curated free tools, plugins, tutorials, and downloads for video editors, organized by platform." />
+    <meta property="og:title" content="3DFX — Curated Tools & Resources for Video Editors" />
+    <meta property="og:description" content="Curated free tools, plugins, tutorials, and downloads for video editors, organized by platform." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  </head>
+  <body class="bg-black text-white antialiased selection:bg-white selection:text-black">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

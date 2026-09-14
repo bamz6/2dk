@@ -1,0 +1,6 @@
+{
+  "name": "3DFX",
+  "description": "Curated free tools, plugins, tutorials, and downloads for video editors.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
