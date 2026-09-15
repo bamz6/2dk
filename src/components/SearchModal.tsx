@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Search, X, ExternalLink, ArrowRight, CornerDownLeft, ArrowUpDown, ShieldCheck } from 'lucide-react';
 import { Resource, CategoryId } from '../types';
 import { RESOURCES } from '../data/resources';
+import { PIRACY_CATEGORIES } from '../data/piracyData';
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -56,8 +57,30 @@ export const SearchModal: React.FC<SearchModalProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
+  // Combine core resources with piracy items for universal search
+  const allResources = React.useMemo(() => {
+    const piracyList: Resource[] = PIRACY_CATEGORIES.flatMap((cat) =>
+      cat.groups.flatMap((g) =>
+        g.items.map((it) => ({
+          id: it.id,
+          name: it.name,
+          description: it.description,
+          link: it.url,
+          category: 'piracy' as CategoryId,
+          platform: 'all' as const,
+          tags: it.tags,
+          section: `${cat.label.toUpperCase()} // ${g.title.toUpperCase()}`,
+          isVerified: true,
+        }))
+      )
+    );
+    const existingIds = new Set(RESOURCES.map((r) => r.id));
+    const extra = piracyList.filter((p) => !existingIds.has(p.id));
+    return [...RESOURCES, ...extra];
+  }, []);
+
   // Filtered results
-  const filtered = RESOURCES.filter((res) => {
+  const filtered = allResources.filter((res) => {
     const matchesCategory =
       activeCategoryFilter === 'all' || res.category === activeCategoryFilter;
 

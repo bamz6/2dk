@@ -162,10 +162,20 @@ export default function App() {
         );
 
       case 'free-assets':
-        return <FreeAssets onBack={() => navigateTo('home')} />;
+        return (
+          <FreeAssets
+            onBack={() => navigateTo('home')}
+            onNavigatePage={(page) => navigateTo(page as PageId)}
+          />
+        );
 
       case 'piracy':
-        return <Piracy onBack={() => navigateTo('home')} />;
+        return (
+          <Piracy
+            onBack={() => navigateTo('home')}
+            onNavigatePage={(page) => navigateTo(page as PageId)}
+          />
+        );
 
       case 'extensions-scripts':
         return (
@@ -189,6 +199,8 @@ export default function App() {
           <BrowseGrid
             selectedPlatform={selectedPlatform}
             onSelectCategory={(catId) => navigateTo(catId)}
+            onNavigatePage={(page) => navigateTo(page as PageId)}
+            onOpenVerification={() => setIsVerificationOpen(true)}
           />
         );
     }
