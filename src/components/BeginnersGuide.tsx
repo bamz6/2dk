@@ -127,7 +127,7 @@ export const BeginnersGuide: React.FC<BeginnersGuideProps> = ({
                     }}
                     className={`block whitespace-nowrap px-3 py-2 text-sm transition-all border-l-2 ${
                       isActive
-                        ? 'border-white bg-[#1A1A1A] text-white font-medium'
+                        ? 'border-white bg-zinc-900 text-white font-medium'
                         : 'border-transparent text-[#8A8A8E] hover:text-white hover:bg-[#121212]'
                     }`}
                   >

@@ -124,10 +124,11 @@ export default function App() {
               onSelectPlatform={handleSelectPlatform}
               onOpenSearch={() => setIsSearchOpen(true)}
             />
-            <Disclaimer onOpenVerification={() => setIsVerificationOpen(true)} />
             <BrowseGrid
               selectedPlatform={selectedPlatform}
               onSelectCategory={(catId) => navigateTo(catId)}
+              onNavigatePage={(page) => navigateTo(page as PageId)}
+              onOpenVerification={() => setIsVerificationOpen(true)}
             />
           </>
         );
@@ -167,7 +168,12 @@ export default function App() {
         return <Piracy onBack={() => navigateTo('home')} />;
 
       case 'extensions-scripts':
-        return <ExtensionsScripts onBack={() => navigateTo('home')} />;
+        return (
+          <ExtensionsScripts
+            onBack={() => navigateTo('home')}
+            onNavigatePage={(page) => navigateTo(page as PageId)}
+          />
+        );
 
       case 'new-drops':
         return <NewDrops onBack={() => navigateTo('home')} />;
