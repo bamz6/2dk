@@ -1,189 +1,218 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
+import { Float, Sparkles } from '@react-three/drei';
 import * as THREE from 'three';
 
-interface SceneContentProps {
-  reducedMotion: boolean;
+export interface ThreeSceneProps {
+  variant?: 'hero' | 'default';
 }
 
-const MonochromaticOrbitalCore: React.FC<SceneContentProps> = ({ reducedMotion }) => {
-  const groupRef = useRef<THREE.Group>(null);
-  const outerRingRef = useRef<THREE.Mesh>(null);
-  const midRingRef = useRef<THREE.Mesh>(null);
-  const innerPolyRef = useRef<THREE.Group>(null);
+interface OrbitalCoreProps {
+  reducedMotion: boolean;
+  lowPower: boolean;
+  isMobile: boolean;
+}
 
-  // Mouse parallax interpolation targets
-  const mouseRef = useRef({ x: 0, y: 0, targetX: 0, targetY: 0 });
-  const scrollRef = useRef({ y: 0, targetY: 0 });
+const OrbitalWireframeStructure: React.FC<OrbitalCoreProps> = ({
+  reducedMotion,
+  lowPower,
+  isMobile,
+}) => {
+  const group = useRef<THREE.Group>(null);
 
+  // Configuration for 5-7 elliptical circular wireframe rings
+  const ringConfigs = useMemo(() => {
+    const count = lowPower ? 4 : 6;
+    const pointsPerRing = lowPower ? 16 : 24;
+    
+    // Radii, tilts, colors and opacities matching 3DFX specification
+    const baseConfigs = [
+      { rx: 1.85, rz: 1.70, rotX: 1.15, rotZ: 0.12, yOffset: -0.22, color: '#FFFFFF', opacity: 0.45 },
+      { rx: 2.25, rz: 2.10, rotX: 0.45, rotZ: -0.35, yOffset: 0.10, color: '#71717A', opacity: 0.35 },
+      { rx: 2.65, rz: 2.45, rotX: -0.75, rotZ: 0.50, yOffset: -0.05, color: '#FFFFFF', opacity: 0.30 },
+      { rx: 1.45, rz: 1.35, rotX: 0.85, rotZ: -0.65, yOffset: 0.28, color: '#A1A1AA', opacity: 0.40 },
+      { rx: 2.95, rz: 2.70, rotX: -0.30, rotZ: 0.25, yOffset: -0.35, color: '#71717A', opacity: 0.25 },
+      { rx: 3.25, rz: 3.00, rotX: 1.40, rotZ: -0.18, yOffset: 0.15, color: '#FFFFFF', opacity: 0.22 },
+    ];
+
+    return baseConfigs.slice(0, count).map((cfg) => {
+      const points: THREE.Vector3[] = [];
+      for (let j = 0; j < pointsPerRing; j++) {
+        const angle = (j / pointsPerRing) * Math.PI * 2;
+        points.push(new THREE.Vector3(Math.cos(angle) * cfg.rx, 0, Math.sin(angle) * cfg.rz));
+      }
+      const geometry = new THREE.BufferGeometry().setFromPoints(points);
+      return { ...cfg, geometry };
+    });
+  }, [lowPower]);
+
+  // Clean up geometries on unmount
   useEffect(() => {
-    if (reducedMotion) return;
-
-    const handlePointerMove = (e: MouseEvent) => {
-      const nx = (e.clientX / window.innerWidth) * 2 - 1;
-      const ny = -(e.clientY / window.innerHeight) * 2 + 1;
-      mouseRef.current.targetX = nx * 0.25;
-      mouseRef.current.targetY = ny * 0.25;
-    };
-
-    const handleScroll = () => {
-      scrollRef.current.targetY = window.scrollY * 0.0012;
-    };
-
-    window.addEventListener('mousemove', handlePointerMove, { passive: true });
-    window.addEventListener('scroll', handleScroll, { passive: true });
-
     return () => {
-      window.removeEventListener('mousemove', handlePointerMove);
-      window.removeEventListener('scroll', handleScroll);
+      ringConfigs.forEach((r) => r.geometry.dispose());
     };
-  }, [reducedMotion]);
+  }, [ringConfigs]);
 
-  useFrame((_, delta) => {
-    if (!groupRef.current) return;
+  // Frame animation: ~0.08 rad/s Y-axis rotation with subtle pointer lerp
+  useFrame((state, delta) => {
+    if (!group.current || reducedMotion) return;
 
-    if (reducedMotion) {
-      // Static elegant pose
-      groupRef.current.rotation.x = 0.25;
-      groupRef.current.rotation.y = 0.45;
-      return;
-    }
+    // Slow ambient rotation around Y axis
+    group.current.rotation.y += delta * 0.08;
 
-    // Smooth lerp for mouse parallax
-    mouseRef.current.x += (mouseRef.current.targetX - mouseRef.current.x) * 0.05;
-    mouseRef.current.y += (mouseRef.current.targetY - mouseRef.current.y) * 0.05;
-    scrollRef.current.y += (scrollRef.current.targetY - scrollRef.current.y) * 0.08;
-
-    // Ambient continuous rotations
-    if (outerRingRef.current) {
-      outerRingRef.current.rotation.z += delta * 0.12;
-      outerRingRef.current.rotation.x = 1.1 + mouseRef.current.y * 0.2;
-      outerRingRef.current.rotation.y = mouseRef.current.x * 0.2;
-    }
-
-    if (midRingRef.current) {
-      midRingRef.current.rotation.z -= delta * 0.16;
-      midRingRef.current.rotation.x = 0.5 - mouseRef.current.y * 0.15;
-      midRingRef.current.rotation.y = 0.8 + mouseRef.current.x * 0.15;
-    }
-
-    if (innerPolyRef.current) {
-      innerPolyRef.current.rotation.y += delta * 0.2;
-      innerPolyRef.current.rotation.x += delta * 0.1;
-    }
-
-    // Subtly apply overall tilt and vertical scroll parallax
-    groupRef.current.position.y = -scrollRef.current.y * 0.8;
-    groupRef.current.rotation.y = mouseRef.current.x * 0.4;
-    groupRef.current.rotation.x = -mouseRef.current.y * 0.3;
+    // Subtle pointer parallax with smooth interpolation
+    group.current.rotation.x = THREE.MathUtils.lerp(
+      group.current.rotation.x,
+      state.pointer.y * 0.12,
+      0.04
+    );
+    group.current.rotation.z = THREE.MathUtils.lerp(
+      group.current.rotation.z,
+      -state.pointer.x * 0.08,
+      0.04
+    );
   });
 
+  const sceneScale = isMobile ? 0.72 : 1.0;
+  const scenePosition: [number, number, number] = isMobile ? [0.6, -0.15, 0] : [2.1, 0, 0];
+
   return (
-    <group ref={groupRef} position={[1.8, -0.1, 0]}>
-      {/* Neutral white directional & ambient lighting */}
-      <ambientLight intensity={0.4} color="#ffffff" />
-      <directionalLight position={[4, 5, 4]} intensity={0.8} color="#ffffff" />
-      <pointLight position={[-3, -2, -2]} intensity={0.2} color="#ffffff" />
+    <group ref={group} position={scenePosition} scale={[sceneScale, sceneScale, sceneScale]}>
+      {/* Neutral white lighting */}
+      <ambientLight intensity={0.25} color="#FFFFFF" />
+      <directionalLight position={[4, 5, 4]} intensity={0.7} color="#FFFFFF" />
 
-      {/* Central geometric low-poly faceted form */}
-      <group ref={innerPolyRef}>
-        {/* Dark matte core surface */}
-        <mesh>
-          <icosahedronGeometry args={[1.05, 0]} />
-          <meshStandardMaterial
-            color="#0D0D0D"
-            roughness={0.9}
-            metalness={0.1}
-            polygonOffset
-            polygonOffsetFactor={1}
-            polygonOffsetUnits={1}
+      <Float
+        speed={reducedMotion ? 0 : 0.8}
+        rotationIntensity={reducedMotion ? 0 : 0.12}
+        floatIntensity={reducedMotion ? 0 : 0.18}
+      >
+        {/* Low-poly faceted core: dark matte surface + white/gray wireframe */}
+        <group>
+          <mesh>
+            <icosahedronGeometry args={[lowPower ? 0.75 : 0.9, 0]} />
+            <meshStandardMaterial
+              color="#0D0D0D"
+              roughness={0.95}
+              metalness={0.05}
+              polygonOffset
+              polygonOffsetFactor={1}
+              polygonOffsetUnits={1}
+            />
+          </mesh>
+          <lineSegments>
+            <edgesGeometry args={[new THREE.IcosahedronGeometry(lowPower ? 0.75 : 0.9, 0)]} />
+            <lineBasicMaterial color="#FFFFFF" transparent opacity={0.32} />
+          </lineSegments>
+          {!lowPower && (
+            <lineSegments>
+              <edgesGeometry args={[new THREE.OctahedronGeometry(0.55, 0)]} />
+              <lineBasicMaterial color="#71717A" transparent opacity={0.4} />
+            </lineSegments>
+          )}
+        </group>
+
+        {/* 5-7 Elliptical circular wireframe rings */}
+        {ringConfigs.map((ring, idx) => (
+          <lineLoop
+            key={idx}
+            geometry={ring.geometry}
+            rotation={[ring.rotX, 0, ring.rotZ]}
+            position={[0, ring.yOffset, 0]}
+          >
+            <lineBasicMaterial
+              color={ring.color}
+              transparent
+              opacity={ring.opacity}
+              linewidth={1}
+            />
+          </lineLoop>
+        ))}
+
+        {/* Minimal technical orbital nodes */}
+        {!lowPower && (
+          <points>
+            <bufferGeometry>
+              <bufferAttribute
+                attach="attributes-position"
+                args={[
+                  new Float32Array([
+                    1.85, 0, 0,
+                    -1.85, 0, 0,
+                    0, 0.1, 2.25,
+                    0, -0.05, -2.65,
+                    1.2, 0.28, 0.8,
+                    -1.4, -0.35, -1.0,
+                  ]),
+                  3,
+                ]}
+              />
+            </bufferGeometry>
+            <pointsMaterial color="#FFFFFF" size={0.04} transparent opacity={0.45} />
+          </points>
+        )}
+
+        {/* Subtle monochrome sparkles only on capable devices */}
+        {!lowPower && !reducedMotion && (
+          <Sparkles
+            count={16}
+            scale={5.5}
+            size={1.2}
+            speed={0.25}
+            opacity={0.25}
+            color="#FFFFFF"
           />
-        </mesh>
-        {/* Crisp white wireframe overlay */}
-        <lineSegments>
-          <edgesGeometry args={[new THREE.IcosahedronGeometry(1.05, 0)]} />
-          <lineBasicMaterial color="#ffffff" transparent opacity={0.35} />
-        </lineSegments>
-
-        {/* Secondary nested octahedron */}
-        <lineSegments>
-          <edgesGeometry args={[new THREE.OctahedronGeometry(0.68, 0)]} />
-          <lineBasicMaterial color="#71717A" transparent opacity={0.45} />
-        </lineSegments>
-      </group>
-
-      {/* Outer thin orbital ring */}
-      <mesh ref={outerRingRef}>
-        <torusGeometry args={[2.1, 0.008, 16, 100]} />
-        <meshBasicMaterial color="#ffffff" transparent opacity={0.25} />
-      </mesh>
-
-      {/* Mid orbital ring */}
-      <mesh ref={midRingRef}>
-        <torusGeometry args={[1.65, 0.006, 16, 80]} />
-        <meshBasicMaterial color="#A1A1AA" transparent opacity={0.2} />
-      </mesh>
-
-      {/* Subtle dotted orbital markers (3 vertices around perimeter) */}
-      <points>
-        <bufferGeometry>
-          <bufferAttribute
-            attach="attributes-position"
-            args={[
-              new Float32Array([
-                2.1, 0, 0,
-                -2.1, 0, 0,
-                0, 2.1, 0,
-                0, -2.1, 0,
-                1.48, 1.48, 0,
-                -1.48, -1.48, 0
-              ]),
-              3
-            ]}
-          />
-        </bufferGeometry>
-        <pointsMaterial color="#ffffff" size={0.035} transparent opacity={0.4} />
-      </points>
+        )}
+      </Float>
     </group>
   );
 };
 
-export const ThreeScene: React.FC = () => {
+export const ThreeScene: React.FC<ThreeSceneProps> = ({ variant: _variant = 'hero' }) => {
   const [reducedMotion, setReducedMotion] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [lowPower, setLowPower] = useState(false);
 
   useEffect(() => {
-    // Check user preference for reduced motion
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setReducedMotion(mediaQuery.matches);
+    // Media query for reduced motion
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReducedMotion(motionQuery.matches);
 
     const handleMotionChange = (e: MediaQueryListEvent) => {
       setReducedMotion(e.matches);
     };
+    motionQuery.addEventListener('change', handleMotionChange);
 
-    mediaQuery.addEventListener('change', handleMotionChange);
-
-    // Screen size detection for mobile positioning
+    // Responsive screen detection
     const handleResize = () => {
       setIsMobile(window.innerWidth < 1024);
     };
     handleResize();
     window.addEventListener('resize', handleResize, { passive: true });
 
+    // Low power detection
+    const nav = navigator as any;
+    const isLowPowerDevice = Boolean(
+      (nav.deviceMemory && nav.deviceMemory <= 4) ||
+      (nav.hardwareConcurrency && nav.hardwareConcurrency <= 4)
+    );
+    setLowPower(isLowPowerDevice);
+
     return () => {
-      mediaQuery.removeEventListener('change', handleMotionChange);
+      motionQuery.removeEventListener('change', handleMotionChange);
       window.removeEventListener('resize', handleResize);
     };
   }, []);
 
   return (
     <div
-      className="absolute inset-0 pointer-events-none overflow-hidden select-none z-0 opacity-40 sm:opacity-55 transition-opacity duration-700"
-      style={{ pointerEvents: 'none' }}
+      className={`w-full h-full pointer-events-none select-none transition-opacity duration-700 ${
+        isMobile ? 'opacity-45' : 'opacity-80'
+      }`}
     >
       <Canvas
         aria-hidden="true"
-        dpr={isMobile ? [1, 1.25] : [1, 1.5]}
+        dpr={[1, lowPower ? 1.25 : 1.75]}
         gl={{
           alpha: true,
           antialias: true,
@@ -198,7 +227,11 @@ export const ThreeScene: React.FC = () => {
         className="w-full h-full pointer-events-none"
         style={{ pointerEvents: 'none' }}
       >
-        <MonochromaticOrbitalCore reducedMotion={reducedMotion} />
+        <OrbitalWireframeStructure
+          reducedMotion={reducedMotion}
+          lowPower={lowPower}
+          isMobile={isMobile}
+        />
       </Canvas>
     </div>
   );

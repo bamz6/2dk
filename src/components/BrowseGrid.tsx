@@ -25,12 +25,16 @@ export const BrowseGrid: React.FC<BrowseGridProps> = ({
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
 
-    // Subtle 1-2.5 degree tilt
-    const tiltX = ((y - centerY) / centerY) * -2;
-    const tiltY = ((x - centerX) / centerX) * 2;
+    // Calculate pointer position relative to the card and limit to ~2.2 degrees maximum
+    const tiltX = Math.max(-2.2, Math.min(2.2, ((y - centerY) / centerY) * -2.2));
+    const tiltY = Math.max(-2.2, Math.min(2.2, ((x - centerX) / centerX) * 2.2));
+    const glowX = `${((x / rect.width) * 100).toFixed(1)}%`;
+    const glowY = `${((y / rect.height) * 100).toFixed(1)}%`;
 
     e.currentTarget.style.setProperty('--tilt-x', `${tiltX.toFixed(2)}deg`);
     e.currentTarget.style.setProperty('--tilt-y', `${tiltY.toFixed(2)}deg`);
+    e.currentTarget.style.setProperty('--glow-x', glowX);
+    e.currentTarget.style.setProperty('--glow-y', glowY);
   };
 
   const handleCardPointerLeave = (e: React.PointerEvent<HTMLButtonElement>) => {
@@ -91,7 +95,7 @@ export const BrowseGrid: React.FC<BrowseGridProps> = ({
                 onClick={() => onSelectCategory(cat.id)}
                 onPointerMove={handleCardPointerMove}
                 onPointerLeave={handleCardPointerLeave}
-                className={`category-card group flex flex-col justify-start p-4 sm:px-5 sm:py-4.5 text-left transition-colors duration-150 focus:outline-none ${
+                className={`tilt-card group flex flex-col justify-start p-4 sm:px-5 sm:py-4.5 text-left transition-colors duration-150 focus:outline-none ${
                   isHighlighted
                     ? 'bg-zinc-900 hover:bg-zinc-800'
                     : 'bg-[#0D0D0D] hover:bg-[#141414]'

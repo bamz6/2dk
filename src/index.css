@@ -51,28 +51,111 @@ body {
 .three-layer {
   position: absolute;
   inset: 0;
-  pointer-events: none;
   z-index: 0;
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+.three-layer canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.three-fallback {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle 420px at 70% 40%, rgba(255, 255, 255, 0.03), transparent 70%);
 }
 
 .hero-content {
   position: relative;
+  z-index: 10;
+}
+
+/* Subtle monochrome technical background grid & radial atmosphere */
+.hero-technical-grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
   z-index: 1;
+  background-size: 32px 32px;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  mask-image: radial-gradient(ellipse 75% 65% at 70% 45%, black 20%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse 75% 65% at 70% 45%, black 20%, transparent 80%);
+}
+
+.hero-radial-atmosphere {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background: radial-gradient(circle 520px at 70% 40%, rgba(255, 255, 255, 0.035), transparent 75%);
 }
 
 /* Category Card 3D Tilt (No WebGL) */
-.category-card {
+.tilt-card {
   --tilt-x: 0deg;
   --tilt-y: 0deg;
+  --glow-x: 50%;
+  --glow-y: 50%;
   transform: perspective(900px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
   transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1);
   will-change: transform;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Faint white radial sheen on hover */
+.tilt-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: radial-gradient(circle 160px at var(--glow-x, 50%) var(--glow-y, 50%), rgba(255, 255, 255, 0.05), transparent 75%);
+  opacity: 0;
+  transition: opacity 200ms ease;
+  z-index: 1;
+}
+
+.tilt-card:hover::before {
+  opacity: 1;
+}
+
+/* Page Depth Transition */
+@keyframes page-depth-in {
+  from {
+    opacity: 0;
+    transform: perspective(1200px) translateZ(-18px) scale(0.985);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(1200px) translateZ(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+.page-depth {
+  animation: page-depth-in 240ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .category-card {
+  .page-depth {
+    animation: none !important;
+  }
+
+  .tilt-card {
     transform: none !important;
     transition: none !important;
+  }
+
+  .tilt-card::before {
+    display: none !important;
   }
 }
 

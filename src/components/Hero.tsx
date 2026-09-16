@@ -41,12 +41,16 @@ export const Hero: React.FC<HeroProps> = ({
     <section className="relative pt-12 pb-10 sm:pt-20 sm:pb-14 border-b border-[#1F1F1F] overflow-hidden">
       {/* 3D Visual Layer */}
       <div className="three-layer">
-        <Suspense fallback={null}>
-          <ThreeScene />
+        <Suspense fallback={<div aria-hidden="true" className="three-fallback" />}>
+          <ThreeScene variant="hero" />
         </Suspense>
       </div>
 
-      <div className="hero-content mx-auto max-w-[1400px] px-4 sm:px-6">
+      {/* Subtle monochrome technical background grid & atmosphere */}
+      <div className="hero-technical-grid" aria-hidden="true" />
+      <div className="hero-radial-atmosphere" aria-hidden="true" />
+
+      <div className="hero-content relative z-10 mx-auto max-w-[1400px] px-4 sm:px-6">
         <div className="max-w-3xl">
           {/* Main Title */}
           <h1 className="font-sans text-6xl sm:text-8xl font-black tracking-tighter text-white leading-none">
