@@ -46,3 +46,33 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #27272A;
 }
+
+/* 3D Visual Layer & Depth */
+.three-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* Category Card 3D Tilt (No WebGL) */
+.category-card {
+  --tilt-x: 0deg;
+  --tilt-y: 0deg;
+  transform: perspective(900px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
+  transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1);
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .category-card {
+    transform: none !important;
+    transition: none !important;
+  }
+}
+

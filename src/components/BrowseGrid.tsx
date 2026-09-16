@@ -15,6 +15,29 @@ export const BrowseGrid: React.FC<BrowseGridProps> = ({
   onNavigatePage,
   onOpenVerification,
 }) => {
+  const handleCardPointerMove = (e: React.PointerEvent<HTMLButtonElement>) => {
+    if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return;
+    }
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+
+    // Subtle 1-2.5 degree tilt
+    const tiltX = ((y - centerY) / centerY) * -2;
+    const tiltY = ((x - centerX) / centerX) * 2;
+
+    e.currentTarget.style.setProperty('--tilt-x', `${tiltX.toFixed(2)}deg`);
+    e.currentTarget.style.setProperty('--tilt-y', `${tiltY.toFixed(2)}deg`);
+  };
+
+  const handleCardPointerLeave = (e: React.PointerEvent<HTMLButtonElement>) => {
+    e.currentTarget.style.setProperty('--tilt-x', '0deg');
+    e.currentTarget.style.setProperty('--tilt-y', '0deg');
+  };
+
   return (
     <section className="py-8 sm:py-10 bg-black text-white">
       <div className="mx-auto max-w-[980px] px-4 sm:px-6">
@@ -66,7 +89,9 @@ export const BrowseGrid: React.FC<BrowseGridProps> = ({
                 key={cat.id}
                 type="button"
                 onClick={() => onSelectCategory(cat.id)}
-                className={`group flex flex-col justify-start p-4 sm:px-5 sm:py-4.5 text-left transition-colors duration-150 focus:outline-none ${
+                onPointerMove={handleCardPointerMove}
+                onPointerLeave={handleCardPointerLeave}
+                className={`category-card group flex flex-col justify-start p-4 sm:px-5 sm:py-4.5 text-left transition-colors duration-150 focus:outline-none ${
                   isHighlighted
                     ? 'bg-zinc-900 hover:bg-zinc-800'
                     : 'bg-[#0D0D0D] hover:bg-[#141414]'

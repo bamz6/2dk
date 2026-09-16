@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, lazy, Suspense } from 'react';
 import { Search } from 'lucide-react';
 import { Platform } from '../types';
+
+const ThreeScene = lazy(() => import('./ThreeScene'));
 
 interface HeroProps {
   selectedPlatform: Platform;
@@ -36,8 +38,15 @@ export const Hero: React.FC<HeroProps> = ({
   }, []);
 
   return (
-    <section className="relative pt-12 pb-10 sm:pt-20 sm:pb-14 border-b border-[#1F1F1F]">
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-6">
+    <section className="relative pt-12 pb-10 sm:pt-20 sm:pb-14 border-b border-[#1F1F1F] overflow-hidden">
+      {/* 3D Visual Layer */}
+      <div className="three-layer">
+        <Suspense fallback={null}>
+          <ThreeScene />
+        </Suspense>
+      </div>
+
+      <div className="hero-content mx-auto max-w-[1400px] px-4 sm:px-6">
         <div className="max-w-3xl">
           {/* Main Title */}
           <h1 className="font-sans text-6xl sm:text-8xl font-black tracking-tighter text-white leading-none">
