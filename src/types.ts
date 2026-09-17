@@ -47,4 +47,5 @@ export interface Category {
   platform?: Platform;
   badge?: string;
   href?: string;
+  count?: string;
 }
