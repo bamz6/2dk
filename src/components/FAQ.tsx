@@ -43,7 +43,7 @@ const FAQS: QA[] = [
 ];
 
 export const FAQ: React.FC<FAQProps> = ({ onBack }) => {
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const toggle = (idx: number) => {
     setOpenIndex(openIndex === idx ? null : idx);

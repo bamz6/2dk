@@ -29,6 +29,12 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenVerification }
 
           <div className="flex flex-wrap gap-6 font-mono text-xs">
             <button
+              onClick={() => onNavigate('guides')}
+              className="text-[#A1A1AA] hover:text-white transition-colors"
+            >
+              Guides
+            </button>
+            <button
               onClick={() => onNavigate('beginners-guide')}
               className="text-[#A1A1AA] hover:text-white transition-colors"
             >

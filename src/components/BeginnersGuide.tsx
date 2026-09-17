@@ -3,16 +3,10 @@ import {
   Check,
   Copy,
   ExternalLink,
+  ArrowRight,
+  X,
   Archive,
   Wrench,
-  X,
-  Cpu,
-  Layers,
-  Sparkles,
-  Sliders,
-  FolderTree,
-  Zap,
-  Package,
 } from 'lucide-react';
 
 interface BeginnersGuideProps {
@@ -21,27 +15,27 @@ interface BeginnersGuideProps {
 }
 
 const SECTIONS = [
-  { id: 'hardware-specs', label: 'Hardware' },
-  { id: 'version-roadmap', label: 'AE Version' },
-  { id: 'essential-plugins', label: 'Plugins' },
-  { id: 'comp-standards', label: 'Composition' },
-  { id: 'preset-directories', label: 'Workflow' },
-  { id: 'velocity-hotkeys', label: 'Shortcuts' },
-  { id: 'preset-starter-bundle', label: 'Editing Pack' },
+  { id: 'hardware', label: 'Hardware' },
+  { id: 'ae-version', label: 'AE Version' },
+  { id: 'plugins', label: 'Plugins' },
+  { id: 'composition', label: 'Composition' },
+  { id: 'workflow', label: 'Workflow' },
+  { id: 'shortcuts', label: 'Shortcuts' },
+  { id: 'editing-pack', label: 'Editing Pack' },
 ];
 
 export const BeginnersGuide: React.FC<BeginnersGuideProps> = ({
   onBack,
   onNavigatePage,
 }) => {
+  const [activeSection, setActiveSection] = useState<string>('hardware');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [activeModal, setActiveModal] = useState<'extract' | 'install' | null>(null);
   const [copiedPassword, setCopiedPassword] = useState(false);
-  const [activeSection, setActiveSection] = useState<string>('hardware-specs');
 
   useEffect(() => {
     const handleScroll = () => {
-      const scrollPosition = window.scrollY + 140;
+      const scrollPosition = window.scrollY + 160;
       for (let i = SECTIONS.length - 1; i >= 0; i--) {
         const el = document.getElementById(SECTIONS[i].id);
         if (el && el.offsetTop <= scrollPosition) {
@@ -56,12 +50,10 @@ export const BeginnersGuide: React.FC<BeginnersGuideProps> = ({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const copyToClipboard = (text: string, key: string) => {
+  const handleCopy = (text: string, key: string) => {
     navigator.clipboard.writeText(text);
     setCopiedKey(key);
-    setTimeout(() => {
-      setCopiedKey(null);
-    }, 2000);
+    setTimeout(() => setCopiedKey(null), 2000);
   };
 
   const handleCopyPassword = () => {
@@ -70,920 +62,826 @@ export const BeginnersGuide: React.FC<BeginnersGuideProps> = ({
     setTimeout(() => setCopiedPassword(false), 2000);
   };
 
+  const scrollToSection = (id: string) => {
+    setActiveSection(id);
+    const el = document.getElementById(id);
+    if (el) {
+      const yOffset = -90;
+      const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+  };
+
   return (
-    <div className="mx-auto max-w-[1400px] px-4 py-8 sm:px-6 sm:py-12 bg-black text-white selection:bg-white selection:text-black">
-      {/* Breadcrumbs */}
-      <div className="mb-4 flex items-center gap-2 font-mono text-xs text-[#71717A]">
-        <button
-          type="button"
-          onClick={onBack}
-          className="text-[#A1A1AA] hover:text-white transition-colors"
-        >
-          Index
-        </button>
-        <span>/</span>
-        <span className="text-white font-semibold">Docs</span>
-        <span>/</span>
-        <span className="text-white font-semibold">Beginner's Handbook</span>
-      </div>
+    <main className="min-h-screen bg-black text-white py-8 sm:py-12 selection:bg-white selection:text-black">
+      <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
+        {/* Breadcrumbs */}
+        <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-2 font-mono text-xs text-zinc-500">
+          <button
+            type="button"
+            onClick={onBack}
+            className="text-zinc-400 hover:text-white transition-colors"
+          >
+            Home
+          </button>
+          <span>/</span>
+          <button
+            type="button"
+            onClick={() => onNavigatePage?.('guides')}
+            className="text-zinc-400 hover:text-white transition-colors"
+          >
+            Guides
+          </button>
+          <span>/</span>
+          <span className="text-white font-semibold">Beginner's Guide</span>
+        </nav>
 
-      {/* Header */}
-      <div className="border-b border-[#1F1F1F] pb-8">
-        <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded bg-[#121212] border border-[#27272A] font-mono text-[11px] text-[#A1A1AA] mb-3">
-          <span>3DFX PROTOCOL // AE PRODUCTION ONBOARDING</span>
-        </div>
-        <h1 className="font-sans text-4xl sm:text-6xl font-extrabold tracking-tight text-white">
-          Beginner's Handbook
-        </h1>
-        <p className="mt-2 text-sm sm:text-base text-[#A1A1AA] max-w-2xl">
-          Core workstation specifications, timeline parameters, plugin architectures, preset directories, and velocity hotkeys.
-        </p>
-      </div>
+        {/* Page Header */}
+        <header className="mb-10 pb-8 border-b border-zinc-800">
+          <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-normal tracking-tight text-white mb-3">
+            Beginner's Guide to After Effects
+          </h1>
+          <p className="font-sans text-sm sm:text-base text-zinc-400 max-w-3xl leading-relaxed">
+            A practical first-read for editors setting up After Effects, choosing plugins, and building clean projects.
+          </p>
+        </header>
 
-      {/* Main Layout: Sticky Sections Sidebar + Guide Document */}
-      <div className="mt-10 flex flex-col lg:flex-row gap-8 lg:gap-14 items-start">
-        {/* Sticky Sections Sidebar matching requested design */}
-        <aside className="w-full lg:w-48 shrink-0 lg:sticky lg:top-24 self-start">
-          <div className="rounded-lg lg:rounded-none border border-[#1F1F1F] lg:border-0 bg-[#0D0D0D] lg:bg-transparent p-3 lg:p-0">
-            <div className="font-sans text-[11px] font-bold tracking-wider text-[#71717A] uppercase mb-2 px-3">
-              SECTIONS
+        {/* 2-Column Layout: Sidebar Nav + Guide Content */}
+        <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start">
+          {/* Sticky Left Sidebar Navigation */}
+          <aside className="w-full lg:w-48 shrink-0 lg:sticky lg:top-20 self-start">
+            <div className="rounded-md border border-zinc-800 bg-[#121212] p-3 lg:p-2">
+              <div className="font-mono text-[10px] font-bold uppercase tracking-widest text-zinc-400 px-3 pt-2 pb-2">
+                SECTIONS
+              </div>
+              <nav className="flex flex-row lg:flex-col gap-1 overflow-x-auto lg:overflow-x-visible pb-1 lg:pb-0 scrollbar-none">
+                {SECTIONS.map((sec) => {
+                  const isActive = activeSection === sec.id;
+                  return (
+                    <button
+                      key={sec.id}
+                      type="button"
+                      onClick={() => scrollToSection(sec.id)}
+                      className={`block w-full text-left whitespace-nowrap rounded px-3 py-2 text-xs transition-colors ${
+                        isActive
+                          ? 'bg-white text-black font-semibold shadow-sm'
+                          : 'text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-100'
+                      }`}
+                    >
+                      {sec.label}
+                    </button>
+                  );
+                })}
+              </nav>
             </div>
-            <nav className="flex flex-row lg:flex-col gap-0.5 overflow-x-auto lg:overflow-visible pb-1 lg:pb-0">
-              {SECTIONS.map((sec) => {
-                const isActive = activeSection === sec.id;
-                return (
-                  <a
-                    key={sec.id}
-                    href={`#${sec.id}`}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setActiveSection(sec.id);
-                      const el = document.getElementById(sec.id);
-                      if (el) {
-                        const yOffset = -90;
-                        const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
-                        window.scrollTo({ top: y, behavior: 'smooth' });
-                      }
-                    }}
-                    className={`block whitespace-nowrap px-3 py-2 text-sm transition-all border-l-2 ${
-                      isActive
-                        ? 'border-white bg-zinc-900 text-white font-medium'
-                        : 'border-transparent text-[#8A8A8E] hover:text-white hover:bg-[#121212]'
-                    }`}
-                  >
-                    {sec.label}
-                  </a>
-                );
-              })}
-            </nav>
-          </div>
-        </aside>
+          </aside>
 
-        {/* Content Body */}
-        <div className="flex-1 min-w-0 max-w-4xl space-y-16">
-        {/* ========================================================================= */}
-        {/* 1. HARDWARE ARCHITECTURE */}
-        {/* ========================================================================= */}
-        <section id="hardware-specs" className="scroll-mt-20">
-          <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-[#71717A] mb-2">
-            <Cpu className="h-3.5 w-3.5 text-[#A1A1AA]" />
-            <span>SEC.01 // SYSTEM BENCHMARKS</span>
-          </div>
-          <h2 className="font-sans text-2xl sm:text-3xl font-bold text-white mb-2">
-            Workstation Architecture
-          </h2>
-          <h3 className="font-sans text-base sm:text-lg font-medium text-[#D4D4D8] mb-4">
-            Hardware bottlenecks and resource allocation in After Effects
-          </h3>
+          {/* Guide Content Area */}
+          <div className="flex-1 w-full min-w-0 max-w-3xl space-y-16">
+            {/* ========================================================================= */}
+            {/* 1. HARDWARE */}
+            {/* ========================================================================= */}
+            <section id="hardware" className="scroll-mt-24 space-y-4">
+              <div className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-400">
+                Before You Start
+              </div>
+              <h2 className="font-serif text-2xl sm:text-3xl font-bold text-white leading-tight">
+                What matters in a PC for After Effects?
+              </h2>
 
-          <div className="space-y-4 text-sm sm:text-base leading-relaxed text-[#A1A1AA]">
-            <p>
-              Unlike conventional NLEs that rely heavily on hardware GPU decoders for stream playback, After Effects processes raster compositions on a frame-by-frame basis. This computational pipeline makes CPU IPC (single-core instructions per cycle), memory density, and scratch disk throughput the primary determiners of system responsiveness.
-            </p>
-            <p>
-              A high-end graphics card accelerates specific OpenCL/CUDA shaders and preview rendering, but it cannot offset an overloaded memory bus or an underpowered processor. For modern composition pipelines, 32GB of RAM is the realistic baseline to prevent constant frame cache flushing. While 16GB allows basic timeline assembly, it quickly degrades once complex adjustment stacks, optical motion blur, and 4K source plates are introduced.
-            </p>
-            <p>
-              Disk write speed directly dictates the stability of your render buffer. Isolate your OS, active project assets, and After Effects disk cache on dedicated NVMe SSD volumes whenever possible. When scratch drives exceed 85% capacity, timeline scrubbing, background autosaves, and RAM preview generation often manifest severe micro-stuttering.
-            </p>
-          </div>
+              <div className="space-y-4 text-sm sm:text-base leading-relaxed text-zinc-300">
+                <p>
+                  After Effects is not a normal video editor. It leans heavily on CPU performance, RAM, fast storage, and cache space. A strong GPU helps with certain effects and previews, but it will not save a weak CPU or a system with too little memory.
+                </p>
+                <p>
+                  If you are buying or upgrading a machine, prioritize a modern multi-core CPU, at least 32GB of RAM for comfortable editing, and an SSD with enough free space for media, project files, and disk cache. 16GB can work for light projects, but it gets tight quickly once you add plugins, high-resolution footage, and large comps.
+                </p>
+                <p>
+                  Storage matters more than beginners expect. Keep After Effects, your footage, and your cache on SSD storage when possible. A nearly full drive can make previews, imports, renders, and autosaves feel broken even when the project itself is fine.
+                </p>
+                <p>
+                  For short social edits, a balanced system beats chasing one extreme spec. CPU, RAM, SSD space, and source footage quality all matter.
+                </p>
+              </div>
+            </section>
 
-          <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 font-mono text-xs">
-            <div className="rounded border border-[#1F1F1F] bg-[#0D0D0D] p-4">
-              <span className="text-[#71717A] block mb-1">01. CPU SINGLE-CORE</span>
-              <span className="text-white font-bold text-sm block mb-1">IPC &gt; Core Count</span>
-              <p className="font-sans text-xs text-[#A1A1AA]">
-                Prioritize single-thread turbo frequencies for rapid expression evaluation and timeline scrubbing.
-              </p>
-            </div>
-            <div className="rounded border border-[#1F1F1F] bg-[#0D0D0D] p-4">
-              <span className="text-[#71717A] block mb-1">02. MEMORY THRESHOLD</span>
-              <span className="text-white font-bold text-sm block mb-1">32GB – 64GB DDR4/5</span>
-              <p className="font-sans text-xs text-[#A1A1AA]">
-                Maintains multi-second green-bar RAM preview caches without continuous frame recalculation.
-              </p>
-            </div>
-            <div className="rounded border border-[#1F1F1F] bg-[#0D0D0D] p-4">
-              <span className="text-[#71717A] block mb-1">03. SCRATCH VOLUME</span>
-              <span className="text-white font-bold text-sm block mb-1">Dedicated NVMe</span>
-              <p className="font-sans text-xs text-[#A1A1AA]">
-                Allocate at least 100GB of fast, dedicated disk cache space to eliminate preview dropped frames.
-              </p>
-            </div>
-          </div>
-        </section>
+            <div className="border-b border-zinc-800" />
 
-        <div className="border-b border-[#1F1F1F]" />
+            {/* ========================================================================= */}
+            {/* 2. AE VERSION */}
+            {/* ========================================================================= */}
+            <section id="ae-version" className="scroll-mt-24 space-y-4">
+              <div className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-400">
+                Version Choice
+              </div>
+              <h2 className="font-serif text-2xl sm:text-3xl font-bold text-white leading-tight">
+                Which After Effects version should you use?
+              </h2>
 
-        {/* ========================================================================= */}
-        {/* 2. VERSION SELECTION & COMPATIBILITY */}
-        {/* ========================================================================= */}
-        <section id="version-roadmap" className="scroll-mt-20">
-          <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-[#71717A] mb-2">
-            <Layers className="h-3.5 w-3.5 text-[#A1A1AA]" />
-            <span>SEC.02 // HOST RELEASES & COMPATIBILITY</span>
-          </div>
-          <h2 className="font-sans text-2xl sm:text-3xl font-bold text-white mb-2">
-            Selecting an After Effects Build
-          </h2>
-          <h3 className="font-sans text-base sm:text-lg font-medium text-[#D4D4D8] mb-4">
-            Deployment stability, native architecture, and backward compatibility
-          </h3>
+              <div className="space-y-4 text-sm sm:text-base leading-relaxed text-zinc-300">
+                <p>
+                  Start with the newest version your system can run well. Newer releases bring bug fixes, format support, and features that older tutorials may not cover. If your device is low-end or a plugin you rely on is unstable, stepping back one or two versions can be a reasonable tradeoff.
+                </p>
+                <p>
+                  Project compatibility is the biggest thing to understand. After Effects can usually open projects made in the same or older versions, but older versions cannot reliably open projects saved in newer versions. If you need to share work with someone on an older release, use File &gt; Save As &gt; Save a Copy As for the target version when available.
+                </p>
+                <p>
+                  If you are on Apple Silicon, plugin compatibility matters as much as the After Effects version itself. Some tools are native, some still need Rosetta, and some older plugins simply are not worth building a workflow around.
+                </p>
+                <p>
+                  Do not choose a version because it is popular on TikTok. Choose the newest version that runs reliably with your plugins and hardware.
+                </p>
+              </div>
+            </section>
 
-          <div className="space-y-4 text-sm sm:text-base leading-relaxed text-[#A1A1AA]">
-            <p>
-              The optimal rule of thumb is deploying the latest stable release your hardware and third-party plugin collection support. Current point releases feature updated color management engines, native Apple Silicon optimizations, and modern format decoders that legacy versions lack.
-            </p>
-            <p>
-              Project schema backwards-compatibility requires careful planning. While After Effects natively opens project archives authored in earlier builds, legacy installations cannot read files saved in newer releases. When delivering comp files to collaborators running earlier versions, always execute <code className="text-white bg-[#181818] px-1.5 py-0.5 rounded border border-[#27272A] font-mono text-xs">File &gt; Save As &gt; Save a Copy As [Previous Version]</code>.
-            </p>
-            <p>
-              For macOS workstations running Apple Silicon, verify whether your core plugins compile to native ARM64 or require the Rosetta 2 translation layer. Mixing legacy non-universal binaries inside a native host application can cause intermittent crashes or render errors.
-            </p>
+            <div className="border-b border-zinc-800" />
 
-            <div className="rounded border border-[#27272A] bg-[#0D0D0D] p-4 text-white font-medium text-xs sm:text-sm">
-              Avoid selecting software builds based on social media trends. Choose the modern revision that consistently validates with your installed plugins and hardware drivers.
-            </div>
-          </div>
-        </section>
-
-        <div className="border-b border-[#1F1F1F]" />
-
-        {/* ========================================================================= */}
-        {/* 3. PLUGIN ARCHITECTURES */}
-        {/* ========================================================================= */}
-        <section id="essential-plugins" className="scroll-mt-20">
-          <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-[#71717A] mb-2">
-            <Sparkles className="h-3.5 w-3.5 text-[#A1A1AA]" />
-            <span>SEC.03 // THIRD-PARTY ECOSYSTEM</span>
-          </div>
-          <h2 className="font-sans text-2xl sm:text-3xl font-bold text-white mb-2">
-            Plugin Architectures
-          </h2>
-          <h3 className="font-sans text-base sm:text-lg font-medium text-[#D4D4D8] mb-4">
-            Building a curated, lightweight effects library
-          </h3>
-
-          <div className="space-y-4 text-sm sm:text-base leading-relaxed text-[#A1A1AA]">
-            <p>
-              Third-party plugins extend After Effects beyond its stock native toolset, delivering hardware-accelerated shaders, procedural particles, and automated optical calculations. However, indiscriminately hoarding every package degrades application launch times, bloats context menus, and creates dependency conflicts.
-            </p>
-            <p>
-              Tailor your toolset strictly to your visual output: colorists utilize <strong className="text-white">Magic Bullet Looks</strong> and <strong className="text-white">Deep Glow</strong>; kinetic editors lean on <strong className="text-white">RSMB</strong>, <strong className="text-white">Sapphire</strong>, <strong className="text-white">BCC</strong>, and <strong className="text-white">Twixtor</strong>; 3D motion designers rely on <strong className="text-white">Element 3D</strong>; and experimental creators employ <strong className="text-white">Signal</strong>, <strong className="text-white">Pixel Sorter</strong>, <strong className="text-white">Glitchify</strong>, or <strong className="text-white">Datamosh</strong>.
-            </p>
-          </div>
-
-          <div className="mt-8">
-            <h4 className="font-mono text-xs uppercase tracking-wider text-white font-semibold mb-4">
-              Standard Production Toolsets
-            </h4>
-
-            <div className="border border-[#1F1F1F] bg-[#1F1F1F] rounded-md overflow-hidden grid grid-cols-1 md:grid-cols-2 gap-[1px]">
-              {[
-                {
-                  name: 'ReelSmart Motion Blur (RSMB)',
-                  tag: 'VECTOR BLUR',
-                  desc: 'Calculates per-pixel optical flow vectors to generate organic motion blur across dynamic transitions.',
-                },
-                {
-                  name: 'Magic Bullet Looks',
-                  tag: 'COLOR PROFILE',
-                  desc: 'Comprehensive color-grading suite featuring customized LUT emulation, curves, film grain, and halation.',
-                },
-                {
-                  name: 'Boris FX Sapphire',
-                  tag: 'VFX & SHADERS',
-                  desc: 'Industry-standard effect library providing optical glows, procedural textures, lens distortions, and glitch passes.',
-                },
-                {
-                  name: 'Boris FX Continuum (BCC)',
-                  tag: 'CLEANUP & RESTORE',
-                  desc: 'Extensive toolkit for digital cleanup, lens flare generation, chroma keying, and motion graphics styling.',
-                },
-                {
-                  name: 'RE:Vision Effects Twixtor',
-                  tag: 'FRAME INTERPOLATION',
-                  desc: 'Advanced optical flow frame synthesis engine designed for clean speed ramps and cinematic slow-motion.',
-                },
-                {
-                  name: 'Maxon Universe',
-                  tag: 'RETRO & TEXTURE',
-                  desc: 'Lightweight GPU-accelerated suite with VHS tape degradation, chromatic aberrations, and retro visual presets.',
-                },
-                {
-                  name: 'Trapcode Particular',
-                  tag: '3D PARTICLES',
-                  desc: 'Physics-based procedural particle engine for atmospheric dust, sparks, organic fluid dynamics, and 3D shapes.',
-                },
-                {
-                  name: 'Video Copilot Element 3D',
-                  tag: 'OPENGL 3D',
-                  desc: 'Real-time particle and 3D mesh rendering engine supporting OBJ/C4D models, PBR materials, and physical shaders.',
-                },
-                {
-                  name: 'Deep Glow',
-                  tag: 'PHOTOMETRIC GLOW',
-                  desc: 'Inverse-square glow calculation simulating real optical light falloff with chromatic dispersion and gamma correction.',
-                },
-                {
-                  name: 'Optical Flares',
-                  tag: 'PROCEDURAL LENS FLARES',
-                  desc: 'Parametric lens flare generator offering dynamic light tracking, iris reflection control, and custom element design.',
-                },
-              ].map((plugin) => (
-                <div key={plugin.name} className="bg-[#0D0D0D] p-5 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between gap-2 mb-2">
-                      <span className="font-sans text-sm sm:text-base font-bold text-white">
-                        {plugin.name}
-                      </span>
-                      <span className="font-mono text-[10px] text-[#71717A] border border-[#27272A] px-1.5 py-0.5 rounded">
-                        {plugin.tag}
-                      </span>
-                    </div>
-                    <p className="text-xs sm:text-sm text-[#A1A1AA] leading-relaxed">
-                      {plugin.desc}
-                    </p>
-                  </div>
+            {/* ========================================================================= */}
+            {/* 3. PLUGINS */}
+            {/* ========================================================================= */}
+            <section id="plugins" className="scroll-mt-24 space-y-6">
+              <div className="space-y-4">
+                <div className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-400">
+                  Plugins
                 </div>
-              ))}
-            </div>
+                <h2 className="font-serif text-2xl sm:text-3xl font-bold text-white leading-tight">
+                  What plugins should a beginner install?
+                </h2>
 
-            <div className="mt-4 rounded border border-[#1F1F1F] bg-[#0D0D0D] p-4 text-xs text-[#A1A1AA]">
-              Tip: Study developer documentation and technical breakdowns before installing any package. Understanding how an effect modifies pixel values prevents unnecessary render load.
-            </div>
-          </div>
-        </section>
+                <div className="space-y-4 text-sm sm:text-base leading-relaxed text-zinc-300">
+                  <p>
+                    Plugins add effects and tools that are not built into After Effects. They can speed up your workflow and open up looks that would take much longer to build manually, but installing everything you find is a bad habit. Too many plugins can slow launch times, clutter menus, and make troubleshooting harder.
+                  </p>
+                  <p>
+                    Start with a small set that matches what you actually edit. Color-focused editors may care about Looks and Deep Glow. Motion-heavy editors may care about RSMB, Sapphire, BCC, or Twixtor. 3D-heavy editors may want Element 3D. Glitch editors may look into tools like Signal, Pixel Sorter, Omino, Glitchify, or Datamosh.
+                  </p>
+                </div>
+              </div>
 
-        <div className="border-b border-[#1F1F1F]" />
+              {/* Common plugin names you will see */}
+              <div className="pt-2">
+                <h3 className="font-sans text-base sm:text-lg font-bold text-white mb-4">
+                  Common plugin names you will see
+                </h3>
 
-        {/* ========================================================================= */}
-        {/* 4. COMPOSITION STANDARDS */}
-        {/* ========================================================================= */}
-        <section id="comp-standards" className="scroll-mt-20">
-          <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-[#71717A] mb-2">
-            <Sliders className="h-3.5 w-3.5 text-[#A1A1AA]" />
-            <span>SEC.04 // COMPOSITION SPECIFICATIONS</span>
-          </div>
-          <h2 className="font-sans text-2xl sm:text-3xl font-bold text-white mb-2">
-            Timeline Configuration
-          </h2>
-          <h3 className="font-sans text-base sm:text-lg font-medium text-[#D4D4D8] mb-4">
-            Resolution, aspect ratios, and temporal cadence
-          </h3>
-
-          <div className="space-y-4 text-sm sm:text-base leading-relaxed text-[#A1A1AA]">
-            <h4 className="font-sans text-base font-bold text-white">
-              Aspect Ratios & Pixel Density
-            </h4>
-            <p>
-              Resolution specifies the total horizontal and vertical pixel grid, while aspect ratio defines the proportional relationship of width to height. Matching target delivery platforms during project initiation eliminates awkward letterboxing and resubmission requirements.
-            </p>
-            <p>
-              Square 1:1 framing (<code className="text-white bg-[#181818] px-1.5 py-0.5 rounded border border-[#27272A] font-mono text-xs">1080×1080</code>) remains a versatile standard for social feed carousels and multi-platform distribution. Vertical 9:16 (<code className="text-white bg-[#181818] px-1.5 py-0.5 rounded border border-[#27272A] font-mono text-xs">1080×1920</code>) serves mobile reels and short-form video, while widescreen 16:9 (<code className="text-white bg-[#181818] px-1.5 py-0.5 rounded border border-[#27272A] font-mono text-xs">1920×1080</code>) remains the reference format for long-form desktop and broadcast displays.
-            </p>
-          </div>
-
-          {/* Ratio Matrix */}
-          <div className="mt-6 border border-[#1F1F1F] rounded-md overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left font-mono text-xs">
-                <thead className="border-b border-[#1F1F1F] bg-[#141414] text-[#71717A] uppercase">
-                  <tr>
-                    <th className="py-3 px-4 font-semibold">Aspect</th>
-                    <th className="py-3 px-4 font-semibold">Resolution</th>
-                    <th className="py-3 px-4 font-semibold font-sans">Target Output</th>
-                    <th className="py-3 px-4 font-semibold text-center">Viewport Frame</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#1F1F1F] bg-[#0D0D0D]">
+                <div className="grid grid-cols-1 gap-2.5">
                   {[
                     {
-                      ratio: '1:1',
-                      pixels: '1080×1080',
-                      goodFor: 'Universal social feed posts, album art, classic edit comps',
-                      frameStyle: 'w-6 h-6',
+                      name: 'RSMB',
+                      desc: 'adds motion blur by analyzing movement between frames, which can make fast edits feel smoother.',
                     },
                     {
-                      ratio: '16:9',
-                      pixels: '1920×1080',
-                      goodFor: 'YouTube standard, desktop monitors, cinematic widescreen',
-                      frameStyle: 'w-8 h-4.5',
+                      name: 'Magic Bullet Looks',
+                      desc: 'a full color-building environment for looks, grades, curves, and finishing.',
                     },
                     {
-                      ratio: '9:16',
-                      pixels: '1080×1920',
-                      goodFor: 'TikTok, Instagram Reels, YouTube Shorts, mobile full-screen',
-                      frameStyle: 'w-4 h-7',
+                      name: 'Sapphire',
+                      desc: 'a large effects suite used for glows, distortions, transitions, and stylized motion.',
                     },
                     {
-                      ratio: '4:3',
-                      pixels: '1440×1080',
-                      goodFor: 'CRT monitor emulation, vintage anime master sources, retro framing',
-                      frameStyle: 'w-7 h-5',
+                      name: 'BCC',
+                      desc: 'another broad effects suite with transitions, image processing, and utility tools.',
                     },
                     {
-                      ratio: '3:4',
-                      pixels: '1080×1440',
-                      goodFor: 'Custom portrait framing without full vertical mobile bleed',
-                      frameStyle: 'w-5 h-6.5',
+                      name: 'Twixtor',
+                      desc: 'used for speed ramps and slow motion when you need frame interpolation.',
                     },
                     {
-                      ratio: '5:4',
-                      pixels: '1350×1080',
-                      goodFor: 'Wide-square photography crops and legacy monitor ratios',
-                      frameStyle: 'w-6.5 h-5',
+                      name: 'Universe',
+                      desc: 'a lighter pack of stylized effects, VHS treatments, glows, and glitch tools.',
                     },
                     {
-                      ratio: '4:5',
-                      pixels: '1080×1350',
-                      goodFor: 'Vertical mobile feeds optimized for maximum vertical screen coverage',
-                      frameStyle: 'w-5 h-6',
+                      name: 'Trapcode',
+                      desc: 'particle and motion graphics tools for overlays, backgrounds, and abstract elements.',
                     },
-                  ].map((row) => (
-                    <tr key={row.ratio} className="hover:bg-[#121212] transition-colors">
-                      <td className="py-3 px-4 text-white font-bold">{row.ratio}</td>
-                      <td className="py-3 px-4 text-zinc-300">{row.pixels}</td>
-                      <td className="py-3 px-4 font-sans text-xs text-[#A1A1AA]">{row.goodFor}</td>
-                      <td className="py-3 px-4">
-                        <div className="flex items-center justify-center">
-                          <div className={`border border-[#3F3F46] bg-black rounded-[2px] ${row.frameStyle}`} />
-                        </div>
-                      </td>
-                    </tr>
+                    {
+                      name: 'Element 3D',
+                      desc: '3D text, models, and object-based motion inside After Effects.',
+                    },
+                    {
+                      name: 'Deep Glow',
+                      desc: 'a cleaner glow effect than the built-in glow for text, logos, and PNG elements.',
+                    },
+                    {
+                      name: 'Optical Flares',
+                      desc: 'lens flare creation with more control than the basic built-in options.',
+                    },
+                  ].map((plugin) => (
+                    <div
+                      key={plugin.name}
+                      className="rounded border border-zinc-800 bg-[#121212] p-4 text-xs sm:text-sm leading-relaxed"
+                    >
+                      <span className="font-bold text-white block mb-1">
+                        {plugin.name}
+                      </span>
+                      <span className="text-zinc-400">
+                        {plugin.desc}
+                      </span>
+                    </div>
                   ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                </div>
+              </div>
 
-          <div className="mt-4 rounded border border-[#1F1F1F] bg-[#0D0D0D] p-4 text-xs text-[#A1A1AA] leading-relaxed">
-            Note: Dimension values always follow <code className="text-white font-mono">Width × Height</code>. Inverting 1080×1920 into 1920×1080 alters vertical canvas orientation into landscape mode.
-          </div>
-
-          <div className="mt-8 space-y-6">
-            <div>
-              <h4 className="font-sans text-base font-bold text-white mb-2">
-                Frame Rate Discipline
-              </h4>
-              <p className="text-sm sm:text-base leading-relaxed text-[#A1A1AA]">
-                Synchronize project timebases with source material. Standard cinematic film and animation footage runs natively at 23.976 or 24 FPS. Standard commercial edits target 30 FPS. High-tempo gameplay sequences or complex retiming workflows benefit from 60 FPS, though 60 FPS quadruples frame cache calculation overhead.
+              <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed pt-1">
+                Before installing a plugin, watch a demo from the developer or a creator who actually uses it. If you cannot explain what a plugin does, you probably do not need it yet.
               </p>
-              <p className="mt-2 text-sm sm:text-base leading-relaxed text-[#A1A1AA]">
-                To produce a stylized low-frame-rate stop-motion aesthetic, apply the <strong className="text-white">Posterize Time</strong> effect to targeted adjustment layers rather than downclocking the base composition settings. This preserves native velocity curves on titles, cameras, and audio sync.
+            </section>
+
+            <div className="border-b border-zinc-800" />
+
+            {/* ========================================================================= */}
+            {/* 4. COMPOSITION */}
+            {/* ========================================================================= */}
+            <section id="composition" className="scroll-mt-24 space-y-6">
+              <div className="space-y-4">
+                <div className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-400">
+                  Project Setup
+                </div>
+                <h2 className="font-serif text-2xl sm:text-3xl font-bold text-white leading-tight">
+                  Composition settings that matter
+                </h2>
+
+                <h3 className="font-sans text-base sm:text-lg font-bold text-white pt-2">
+                  Resolution and aspect ratio
+                </h3>
+
+                <div className="space-y-4 text-sm sm:text-base leading-relaxed text-zinc-300">
+                  <p>
+                    Resolution is the pixel count of your frame, such as 1920 by 1080. Aspect ratio is the shape of the frame, such as 16:9, 9:16, or 1:1. These are related, but they are not the same thing.
+                  </p>
+                  <p>
+                    A lot of edit-style projects are made square at 1080 by 1080. It is simple, light to preview, easy to crop from most source footage, and works well when the edit is meant to sit in a grid or be reposted across multiple apps. If you are just practicing, making a pack, or building a general edit that is not platform-specific, 1:1 is usually the cleanest starting point.
+                  </p>
+                  <p>
+                    Use the format your final platform needs. For TikTok, Reels, and Shorts, 1080 by 1920 is a practical vertical standard. For YouTube or widescreen edits, 1920 by 1080 is usually enough. Higher resolutions can look sharper, but they also increase preview time, cache size, render time, and storage pressure.
+                  </p>
+                </div>
+              </div>
+
+              {/* Composition Table */}
+              <div className="overflow-x-auto rounded border border-zinc-800 bg-[#121212]">
+                <table className="w-full text-left text-xs sm:text-sm">
+                  <thead>
+                    <tr className="border-b border-zinc-800 bg-zinc-900/60 font-mono text-[11px] text-zinc-400 uppercase">
+                      <th className="py-3 px-4 font-bold">Ratio</th>
+                      <th className="py-3 px-4 font-bold">Pixels</th>
+                      <th className="py-3 px-4 font-bold">Good for</th>
+                      <th className="py-3 px-4 font-bold text-center">Frame</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-800">
+                    {[
+                      { ratio: '1:1', pixels: '1080x1080', goodFor: 'Square edits, profile/grid posts, many classic edit comps', w: 'w-6', h: 'h-6' },
+                      { ratio: '16:9', pixels: '1920x1080', goodFor: 'YouTube, landscape clips, widescreen footage', w: 'w-8', h: 'h-4.5' },
+                      { ratio: '9:16', pixels: '1080x1920', goodFor: 'TikTok, Reels, Shorts, vertical edits', w: 'w-4.5', h: 'h-8' },
+                      { ratio: '4:3', pixels: '1440x1080', goodFor: 'Older TV look, retro framing, some anime sources', w: 'w-7', h: 'h-5.5' },
+                      { ratio: '3:4', pixels: '1080x1440', goodFor: 'Portrait edits that are not fully vertical', w: 'w-5.5', h: 'h-7' },
+                      { ratio: '5:4', pixels: '1350x1080', goodFor: 'Slightly wide square-style crops', w: 'w-7', h: 'h-5.5' },
+                      { ratio: '4:5', pixels: '1080x1350', goodFor: 'Portrait feed posts and tighter mobile crops', w: 'w-5.5', h: 'h-7' },
+                    ].map((row, idx) => (
+                      <tr key={idx} className="hover:bg-zinc-900/30 transition-colors">
+                        <td className="py-3 px-4 font-mono font-bold text-white whitespace-nowrap">
+                          {row.ratio}
+                        </td>
+                        <td className="py-3 px-4 font-mono text-zinc-300 whitespace-nowrap">
+                          {row.pixels}
+                        </td>
+                        <td className="py-3 px-4 text-zinc-400">
+                          {row.goodFor}
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="flex justify-center items-center">
+                            <div className={`border border-zinc-600 bg-zinc-800/80 rounded-sm ${row.w} ${row.h}`} />
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">
+                The first number in a resolution is width. The second number is height. So 1080x1920 is vertical, while 1920x1080 is horizontal. If you swap those two numbers by accident, the composition shape changes completely.
               </p>
-            </div>
 
-            <div>
-              <h4 className="font-sans text-base font-bold text-white mb-2">
-                Timeline Boundaries & Background Solid
-              </h4>
-              <p className="text-sm sm:text-base leading-relaxed text-[#A1A1AA]">
-                Constrain comp length to your master audio track duration from the start to prevent rendering dead air. Keep the default comp background color black to guarantee predictable alpha channels during luminance transitions and flash overlays.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <div className="border-b border-[#1F1F1F]" />
-
-        {/* ========================================================================= */}
-        {/* 5. PRESET DIRECTORIES */}
-        {/* ========================================================================= */}
-        <section id="preset-directories" className="scroll-mt-20">
-          <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-[#71717A] mb-2">
-            <FolderTree className="h-3.5 w-3.5 text-[#A1A1AA]" />
-            <span>SEC.05 // PRESET ARCHITECTURE & PATHS</span>
-          </div>
-          <h2 className="font-sans text-2xl sm:text-3xl font-bold text-white mb-2">
-            Preset Organization
-          </h2>
-          <h3 className="font-sans text-base sm:text-lg font-medium text-[#D4D4D8] mb-4">
-            Managing user .FFX animations and Magic Bullet Looks trees
-          </h3>
-
-          <div className="space-y-4 text-sm sm:text-base leading-relaxed text-[#A1A1AA]">
-            <p>
-              After Effects exports compound effect combinations, spatial keyframes, and custom expressions into reusable <code className="text-white font-mono text-xs">.ffx</code> animation preset bundles. Preserving custom transitions, camera shakes, and text stylizations requires structured directory hygiene.
-            </p>
-            <p>
-              Save customized presets via <code className="text-white bg-[#181818] px-1.5 py-0.5 rounded border border-[#27272A] font-mono text-xs">Animation &gt; Save Animation Preset</code>. Always write files to the designated user documents path to isolate personal assets from host application update cycles.
-            </p>
-          </div>
-
-          {/* User Presets Paths */}
-          <div className="mt-6 space-y-3 font-mono text-xs">
-            <div className="rounded border border-[#1F1F1F] bg-[#0D0D0D] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <span className="text-[#71717A] text-[10px] block mb-1">WINDOWS // USER PRESETS REPOSITORY</span>
-                <code className="text-white break-all">Documents\Adobe\After Effects [version]\User Presets</code>
-              </div>
-              <button
-                type="button"
-                onClick={() => copyToClipboard('Documents\\Adobe\\After Effects [version]\\User Presets', 'win-preset')}
-                className="self-start sm:self-auto shrink-0 flex items-center gap-1.5 rounded border border-[#27272A] bg-black px-3 py-1.5 text-xs text-white hover:border-white transition-colors"
-              >
-                {copiedKey === 'win-preset' ? (
-                  <>
-                    <Check className="h-3.5 w-3.5 text-white" />
-                    <span>COPIED</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="h-3.5 w-3.5" />
-                    <span>COPY PATH</span>
-                  </>
-                )}
-              </button>
-            </div>
-
-            <div className="rounded border border-[#1F1F1F] bg-[#0D0D0D] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <span className="text-[#71717A] text-[10px] block mb-1">MACOS // USER PRESETS REPOSITORY</span>
-                <code className="text-white break-all">~/Documents/Adobe/After Effects [version]/User Presets</code>
-              </div>
-              <button
-                type="button"
-                onClick={() => copyToClipboard('~/Documents/Adobe/After Effects [version]/User Presets', 'mac-preset')}
-                className="self-start sm:self-auto shrink-0 flex items-center gap-1.5 rounded border border-[#27272A] bg-black px-3 py-1.5 text-xs text-white hover:border-white transition-colors"
-              >
-                {copiedKey === 'mac-preset' ? (
-                  <>
-                    <Check className="h-3.5 w-3.5 text-white" />
-                    <span>COPIED</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="h-3.5 w-3.5" />
-                    <span>COPY PATH</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-
-          <div className="mt-8">
-            <h4 className="font-sans text-base font-bold text-white mb-2">
-              Magic Bullet Looks Profiles (.mblook / .rgx)
-            </h4>
-            <p className="text-sm sm:text-base leading-relaxed text-[#A1A1AA] mb-4">
-              MBL uses dedicated proprietary profile containers. Builds v13 and older read legacy <code className="text-white font-mono text-xs">.mblook</code> formats. Builds v14 and later transition to XML-based <code className="text-white font-mono text-xs">.rgx</code> files in the user documents directory. Older <code className="text-white font-mono text-xs">.mblook</code> presets can be converted by opening them directly within the Looks Builder interface.
-            </p>
-
-            <div className="space-y-3 font-mono text-xs">
-              <div className="rounded border border-[#1F1F1F] bg-[#0D0D0D] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div>
-                  <span className="text-[#71717A] text-[10px] block mb-1">WINDOWS // MBL v13 LEGACY PATH</span>
-                  <code className="text-white break-all">C:\Program Files (x86)\LooksBuilder\Looks</code>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => copyToClipboard('C:\\Program Files (x86)\\LooksBuilder\\Looks', 'mbl-win-13')}
-                  className="self-start sm:self-auto shrink-0 flex items-center gap-1.5 rounded border border-[#27272A] bg-black px-3 py-1.5 text-xs text-white hover:border-white transition-colors"
-                >
-                  {copiedKey === 'mbl-win-13' ? (
-                    <>
-                      <Check className="h-3.5 w-3.5 text-white" />
-                      <span>COPIED</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="h-3.5 w-3.5" />
-                      <span>COPY PATH</span>
-                    </>
-                  )}
-                </button>
-              </div>
-
-              <div className="rounded border border-[#1F1F1F] bg-[#0D0D0D] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div>
-                  <span className="text-[#71717A] text-[10px] block mb-1">MACOS // MBL v13 LEGACY PATH</span>
-                  <code className="text-white break-all">/Library/Application Support/LooksBuilder/Looks/</code>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => copyToClipboard('/Library/Application Support/LooksBuilder/Looks/', 'mbl-mac-13')}
-                  className="self-start sm:self-auto shrink-0 flex items-center gap-1.5 rounded border border-[#27272A] bg-black px-3 py-1.5 text-xs text-white hover:border-white transition-colors"
-                >
-                  {copiedKey === 'mbl-mac-13' ? (
-                    <>
-                      <Check className="h-3.5 w-3.5 text-white" />
-                      <span>COPIED</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="h-3.5 w-3.5" />
-                      <span>COPY PATH</span>
-                    </>
-                  )}
-                </button>
-              </div>
-
-              <div className="rounded border border-[#1F1F1F] bg-[#0D0D0D] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div>
-                  <span className="text-[#71717A] text-[10px] block mb-1">CROSS-PLATFORM // MBL v14+ MODERN PATH</span>
-                  <code className="text-white break-all">Documents\Red Giant\Magic Bullet Looks\Presets</code>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => copyToClipboard('Documents\\Red Giant\\Magic Bullet Looks\\Presets', 'mbl-14')}
-                  className="self-start sm:self-auto shrink-0 flex items-center gap-1.5 rounded border border-[#27272A] bg-black px-3 py-1.5 text-xs text-white hover:border-white transition-colors"
-                >
-                  {copiedKey === 'mbl-14' ? (
-                    <>
-                      <Check className="h-3.5 w-3.5 text-white" />
-                      <span>COPIED</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="h-3.5 w-3.5" />
-                      <span>COPY PATH</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <div className="mt-4 space-y-2 text-xs sm:text-sm text-[#A1A1AA]">
-              <p>
-                Best Practice: Structure subdirectories by function (<code className="text-zinc-300">/Color</code>, <code className="text-zinc-300">/Motion</code>, <code className="text-zinc-300">/Typography</code>, <code className="text-zinc-300">/Distortion</code>).
-              </p>
-              <p>
-                Never install third-party presets into the internal Program Files application root directory; subsequent Adobe software updates overwrite or purge non-native content.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <div className="border-b border-[#1F1F1F]" />
-
-        {/* ========================================================================= */}
-        {/* 6. VELOCITY COMMANDS */}
-        {/* ========================================================================= */}
-        <section id="velocity-hotkeys" className="scroll-mt-20">
-          <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-[#71717A] mb-2">
-            <Zap className="h-3.5 w-3.5 text-[#A1A1AA]" />
-            <span>SEC.06 // TIMELINE EFFICIENCY</span>
-          </div>
-          <h2 className="font-sans text-2xl sm:text-3xl font-bold text-white mb-2">
-            High-Velocity Key Commands
-          </h2>
-          <h3 className="font-sans text-base sm:text-lg font-medium text-[#D4D4D8] mb-4">
-            Eliminating mouse-travel latency in the timeline
-          </h3>
-
-          <p className="text-sm sm:text-base leading-relaxed text-[#A1A1AA] mb-6">
-            Key commands streamline routine assembly actions into muscle memory. Master foundational playback, layer splitting, and property revelations before memorizing specialized secondary macros. On macOS systems, replace <kbd className="font-mono text-xs text-white">Ctrl</kbd> with <kbd className="font-mono text-xs text-white">Cmd</kbd>.
-          </p>
-
-          <div className="space-y-4">
-            {/* Playback & Playhead */}
-            <div className="rounded border border-[#1F1F1F] bg-[#0D0D0D] p-5">
-              <span className="font-mono text-xs text-[#71717A] uppercase tracking-wider block mb-3 font-semibold">
-                01. Preview & Playhead Transport
-              </span>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 font-mono text-xs">
-                <div className="flex items-center justify-between border-b border-[#1F1F1F] pb-2">
-                  <span className="text-white font-bold bg-black px-2 py-0.5 rounded border border-[#27272A]">Space</span>
-                  <span className="text-[#A1A1AA] font-sans">Toggle RAM Preview</span>
-                </div>
-                <div className="flex items-center justify-between border-b border-[#1F1F1F] pb-2">
-                  <span className="text-white font-bold bg-black px-2 py-0.5 rounded border border-[#27272A]">0 (Numpad)</span>
-                  <span className="text-[#A1A1AA] font-sans">Cached Audio & Video Preview</span>
-                </div>
-                <div className="flex items-center justify-between border-b border-[#1F1F1F] pb-2">
-                  <span className="text-white font-bold bg-black px-2 py-0.5 rounded border border-[#27272A]">I / O</span>
-                  <span className="text-[#A1A1AA] font-sans">Seek to Layer In / Out Marker</span>
-                </div>
-                <div className="flex items-center justify-between border-b border-[#1F1F1F] pb-2">
-                  <span className="text-white font-bold bg-black px-2 py-0.5 rounded border border-[#27272A]">B / N</span>
-                  <span className="text-[#A1A1AA] font-sans">Define Work Area In / Out Boundary</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Layer Manipulation */}
-            <div className="rounded border border-[#1F1F1F] bg-[#0D0D0D] p-5">
-              <span className="font-mono text-xs text-[#71717A] uppercase tracking-wider block mb-3 font-semibold">
-                02. Layer Trimming & Assembly
-              </span>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 font-mono text-xs">
-                <div className="flex items-center justify-between border-b border-[#1F1F1F] pb-2">
-                  <span className="text-white font-bold bg-black px-2 py-0.5 rounded border border-[#27272A]">Ctrl + Shift + D</span>
-                  <span className="text-[#A1A1AA] font-sans">Split Selected Layer at Playhead</span>
-                </div>
-                <div className="flex items-center justify-between border-b border-[#1F1F1F] pb-2">
-                  <span className="text-white font-bold bg-black px-2 py-0.5 rounded border border-[#27272A]">Alt + [</span>
-                  <span className="text-[#A1A1AA] font-sans">Trim Layer In-Point to Playhead</span>
-                </div>
-                <div className="flex items-center justify-between border-b border-[#1F1F1F] pb-2">
-                  <span className="text-white font-bold bg-black px-2 py-0.5 rounded border border-[#27272A]">Alt + ]</span>
-                  <span className="text-[#A1A1AA] font-sans">Trim Layer Out-Point to Playhead</span>
-                </div>
-                <div className="flex items-center justify-between border-b border-[#1F1F1F] pb-2">
-                  <span className="text-white font-bold bg-black px-2 py-0.5 rounded border border-[#27272A]">Ctrl + D</span>
-                  <span className="text-[#A1A1AA] font-sans">Duplicate Layer Stack</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Core Tools */}
-            <div className="rounded border border-[#1F1F1F] bg-[#0D0D0D] p-5">
-              <span className="font-mono text-xs text-[#71717A] uppercase tracking-wider block mb-3 font-semibold">
-                03. Primary Workspace Tools
-              </span>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 font-mono text-xs">
-                <div className="flex items-center justify-between border-b border-[#1F1F1F] pb-2">
-                  <span className="text-white font-bold bg-black px-2 py-0.5 rounded border border-[#27272A]">V</span>
-                  <span className="text-[#A1A1AA] font-sans">Pointer / Selection</span>
-                </div>
-                <div className="flex items-center justify-between border-b border-[#1F1F1F] pb-2">
-                  <span className="text-white font-bold bg-black px-2 py-0.5 rounded border border-[#27272A]">H</span>
-                  <span className="text-[#A1A1AA] font-sans">Viewport Hand Pan</span>
-                </div>
-                <div className="flex items-center justify-between border-b border-[#1F1F1F] pb-2">
-                  <span className="text-white font-bold bg-black px-2 py-0.5 rounded border border-[#27272A]">G</span>
-                  <span className="text-[#A1A1AA] font-sans">Bezier Pen Vector</span>
-                </div>
-                <div className="flex items-center justify-between border-b border-[#1F1F1F] pb-2">
-                  <span className="text-white font-bold bg-black px-2 py-0.5 rounded border border-[#27272A]">Y</span>
-                  <span className="text-[#A1A1AA] font-sans">Pan-Behind (Anchor Point)</span>
-                </div>
-                <div className="flex items-center justify-between border-b border-[#1F1F1F] pb-2 sm:col-span-2">
-                  <span className="text-white font-bold bg-black px-2 py-0.5 rounded border border-[#27272A]">Ctrl + Alt + Shift + T</span>
-                  <span className="text-[#A1A1AA] font-sans">Instantiate New Typography Layer</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Transform Properties */}
-            <div className="rounded border border-[#1F1F1F] bg-[#0D0D0D] p-5">
-              <span className="font-mono text-xs text-[#71717A] uppercase tracking-wider block mb-3 font-semibold">
-                04. Spatial & Transform Properties
-              </span>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 font-mono text-xs">
-                <div className="flex items-center justify-between border-b border-[#1F1F1F] pb-2">
-                  <span className="text-white font-bold bg-black px-2 py-0.5 rounded border border-[#27272A]">P</span>
-                  <span className="text-[#A1A1AA] font-sans">Reveal Position Property</span>
-                </div>
-                <div className="flex items-center justify-between border-b border-[#1F1F1F] pb-2">
-                  <span className="text-white font-bold bg-black px-2 py-0.5 rounded border border-[#27272A]">S</span>
-                  <span className="text-[#A1A1AA] font-sans">Reveal Scale Property</span>
-                </div>
-                <div className="flex items-center justify-between border-b border-[#1F1F1F] pb-2">
-                  <span className="text-white font-bold bg-black px-2 py-0.5 rounded border border-[#27272A]">R</span>
-                  <span className="text-[#A1A1AA] font-sans">Reveal Rotation Property</span>
-                </div>
-                <div className="flex items-center justify-between border-b border-[#1F1F1F] pb-2">
-                  <span className="text-white font-bold bg-black px-2 py-0.5 rounded border border-[#27272A]">T</span>
-                  <span className="text-[#A1A1AA] font-sans">Reveal Opacity (Transparency)</span>
-                </div>
-                <div className="flex items-center justify-between border-b border-[#1F1F1F] pb-2">
-                  <span className="text-white font-bold bg-black px-2 py-0.5 rounded border border-[#27272A]">U</span>
-                  <span className="text-[#A1A1AA] font-sans">Filter to Animated Keyframes Only</span>
-                </div>
-                <div className="flex items-center justify-between border-b border-[#1F1F1F] pb-2">
-                  <span className="text-white font-bold bg-black px-2 py-0.5 rounded border border-[#27272A]">L (Double Tap)</span>
-                  <span className="text-[#A1A1AA] font-sans">Expand Audio Waveform</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Document & Setup */}
-            <div className="rounded border border-[#1F1F1F] bg-[#0D0D0D] p-5">
-              <span className="font-mono text-xs text-[#71717A] uppercase tracking-wider block mb-3 font-semibold">
-                05. Composition & Document Operations
-              </span>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 font-mono text-xs">
-                <div className="flex items-center justify-between border-b border-[#1F1F1F] pb-2">
-                  <span className="text-white font-bold bg-black px-2 py-0.5 rounded border border-[#27272A]">Ctrl + S</span>
-                  <span className="text-[#A1A1AA] font-sans">Commit Project State (Save)</span>
-                </div>
-                <div className="flex items-center justify-between border-b border-[#1F1F1F] pb-2">
-                  <span className="text-white font-bold bg-black px-2 py-0.5 rounded border border-[#27272A]">Ctrl + I</span>
-                  <span className="text-[#A1A1AA] font-sans">Import Media Assets</span>
-                </div>
-                <div className="flex items-center justify-between border-b border-[#1F1F1F] pb-2">
-                  <span className="text-white font-bold bg-black px-2 py-0.5 rounded border border-[#27272A]">Ctrl + K</span>
-                  <span className="text-[#A1A1AA] font-sans">Access Composition Settings</span>
-                </div>
-                <div className="flex items-center justify-between border-b border-[#1F1F1F] pb-2">
-                  <span className="text-white font-bold bg-black px-2 py-0.5 rounded border border-[#27272A]">Ctrl + Alt + Y</span>
-                  <span className="text-[#A1A1AA] font-sans">Instantiate Adjustment Layer</span>
-                </div>
-                <div className="flex items-center justify-between border-b border-[#1F1F1F] pb-2 sm:col-span-2">
-                  <span className="text-white font-bold bg-black px-2 py-0.5 rounded border border-[#27272A]">Ctrl + Alt + Home</span>
-                  <span className="text-[#A1A1AA] font-sans">Center Anchor Point in Layer Bounds</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-4 rounded border border-[#1F1F1F] bg-[#0D0D0D] p-4 text-xs text-[#A1A1AA] leading-relaxed">
-            Pro Tip: For rapid spatial blocking, assign immediate keyframes with <kbd className="font-mono text-white">Alt + Shift + P/S/R/T</kbd> (Windows) or <kbd className="font-mono text-white">Option + P/S/R/T</kbd> (macOS) without manually expanding twirl-down properties.
-          </div>
-
-          <div className="mt-4 rounded border border-[#27272A] bg-black p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-            <span className="text-[#A1A1AA]">
-              First time deploying archive packages? Review our verified archive extraction and system installation runbooks.
-            </span>
-            <div className="flex items-center gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={() => setActiveModal('extract')}
-                className="rounded border border-[#3F3F46] bg-[#0D0D0D] px-2.5 py-1 text-white hover:bg-white hover:text-black font-semibold transition-colors"
-              >
-                Extract Runbook
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveModal('install')}
-                className="rounded border border-[#3F3F46] bg-[#0D0D0D] px-2.5 py-1 text-white hover:bg-white hover:text-black font-semibold transition-colors"
-              >
-                Install Runbook
-              </button>
-            </div>
-          </div>
-        </section>
-
-        <div className="border-b border-[#1F1F1F]" />
-
-        {/* ========================================================================= */}
-        {/* 7. STARTER PACK / PRESET BUNDLE */}
-        {/* ========================================================================= */}
-        <section id="preset-starter-bundle" className="scroll-mt-20">
-          <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-[#71717A] mb-2">
-            <Package className="h-3.5 w-3.5 text-[#A1A1AA]" />
-            <span>SEC.07 // EXTERNAL RESOURCES</span>
-          </div>
-          <h2 className="font-sans text-2xl sm:text-3xl font-bold text-white mb-2">
-            Production Starter Bundles
-          </h2>
-          <h3 className="font-sans text-base sm:text-lg font-medium text-[#D4D4D8] mb-4">
-            Deconstructing reference animation presets and styling frameworks
-          </h3>
-
-          <div className="space-y-4 text-sm sm:text-base leading-relaxed text-[#A1A1AA]">
-            <p>
-              Authoring customized presets remains the most sustainable skill for any visual editor. However, analyzing professional project files and well-architected preset bundles can significantly compress the initial learning curve. Studying how experienced creators layer optical blurs, curve dampeners, and displacement maps accelerates timeline mastery.
-            </p>
-            <p>
-              If you require an organized production baseline, 411's Essential Editing Pack on ScenePacks is a structured community bundle tailored for kinetic workflows. It includes pre-calibrated color grades across After Effects 2023 through 2026, dynamic camera shakes, zoom transitions, temporal retiming parameters, and typography treatments.
-            </p>
-          </div>
-
-          {/* Preset Card */}
-          <div className="mt-6 rounded-md border border-[#27272A] bg-[#0D0D0D] p-6 sm:p-8">
-            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 border-b border-[#1F1F1F] pb-6">
-              <div>
-                <span className="font-mono text-xs text-[#71717A] tracking-wider block mb-1">
-                  SCENEPACKS.COM // PRODUCTION BUNDLE
-                </span>
-                <h4 className="font-sans text-xl sm:text-2xl font-bold text-white">
-                  Essential Editing Pack
-                </h4>
-                <p className="mt-2 text-xs sm:text-sm text-[#A1A1AA] max-w-xl">
-                  A modular reference pack providing foundational motion presets, retiming presets, and color profiles without building each component from scratch.
+              {/* Frame rate */}
+              <div className="space-y-3 pt-2">
+                <h3 className="font-sans text-base sm:text-lg font-bold text-white">
+                  Frame rate
+                </h3>
+                <p className="text-sm sm:text-base leading-relaxed text-zinc-300">
+                  Pick a frame rate that fits your source. 23.976 or 24fps is common for film and anime footage. 30fps works well for general edits and many social platforms. 60fps is useful for gameplay, speed ramps, and motion-heavy work, but it asks more from your machine.
+                </p>
+                <p className="text-sm sm:text-base leading-relaxed text-zinc-300">
+                  If you want a choppy or low-frame-rate style, consider using Posterize Time on specific layers instead of lowering the entire composition. That keeps the comp flexible and avoids forcing every layer into the same look.
                 </p>
               </div>
 
-              <a
-                href="https://scenepacks.com"
-                target="_blank"
-                rel="noreferrer noopener"
-                className="shrink-0 inline-flex items-center justify-center gap-2 rounded bg-white px-5 py-2.5 text-xs sm:text-sm font-bold text-black hover:bg-zinc-200 transition-colors"
-              >
-                <span>Access Catalog</span>
-                <ExternalLink className="h-4 w-4" />
-              </a>
-            </div>
+              {/* Duration and background */}
+              <div className="space-y-3 pt-2">
+                <h3 className="font-sans text-base sm:text-lg font-bold text-white">
+                  Duration and background
+                </h3>
+                <p className="text-sm sm:text-base leading-relaxed text-zinc-300">
+                  Set the duration to the length of the edit or audio you are building around. If your audio is 30 seconds, start with a 30-second comp. You can still adjust the composition duration and work area later.
+                </p>
+                <p className="text-sm sm:text-base leading-relaxed text-zinc-300">
+                  Background color only appears where there are no visible layers. Black is a clean default for fades, flashes, and most edit workflows.
+                </p>
+              </div>
+            </section>
 
-            {/* Breakdown */}
-            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 font-mono text-xs">
-              <div className="border border-[#1F1F1F] bg-black p-4 rounded">
-                <span className="text-white font-bold block mb-1">Color Grading</span>
-                <p className="font-sans text-xs text-[#A1A1AA]">Looks profiles engineered for AE 2023 through 2026+ releases.</p>
-              </div>
-              <div className="border border-[#1F1F1F] bg-black p-4 rounded">
-                <span className="text-white font-bold block mb-1">Kinetic Presets</span>
-                <p className="font-sans text-xs text-[#A1A1AA]">Organic camera shakes, zooms, directional blurs, and glitch textures.</p>
-              </div>
-              <div className="border border-[#1F1F1F] bg-black p-4 rounded">
-                <span className="text-white font-bold block mb-1">Optical Retiming</span>
-                <p className="font-sans text-xs text-[#A1A1AA]">Configured Twixtor parameters for smooth speed ramps and frame blending.</p>
-              </div>
-              <div className="border border-[#1F1F1F] bg-black p-4 rounded">
-                <span className="text-white font-bold block mb-1">Upscale Profiles</span>
-                <p className="font-sans text-xs text-[#A1A1AA]">Tested Topaz Video AI model settings for crisp footage upscaling.</p>
-              </div>
-              <div className="border border-[#1F1F1F] bg-black p-4 rounded">
-                <span className="text-white font-bold block mb-1">Typography Stylization</span>
-                <p className="font-sans text-xs text-[#A1A1AA]">Parametric text glows, gradients, scanlines, and turbulent wave animations.</p>
-              </div>
-              <div className="border border-[#1F1F1F] bg-black p-4 rounded">
-                <span className="text-white font-bold block mb-1">Import Documentation</span>
-                <p className="font-sans text-xs text-[#A1A1AA]">Step-by-step setup guides to maintain directory cleanliness.</p>
-              </div>
-            </div>
+            <div className="border-b border-zinc-800" />
 
-            <p className="mt-6 text-xs text-[#71717A] leading-relaxed">
-              Workflow Tip: Treat commercial packs as analytical templates. Inspect imported layers by pressing <kbd className="font-mono text-zinc-300">U</kbd> or <kbd className="font-mono text-zinc-300">UU</kbd> to inspect keyframe easing curves and expression bindings.
-            </p>
+            {/* ========================================================================= */}
+            {/* 5. WORKFLOW */}
+            {/* ========================================================================= */}
+            <section id="workflow" className="scroll-mt-24 space-y-6">
+              <div className="space-y-4">
+                <div className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-400">
+                  Workflow
+                </div>
+                <h2 className="font-serif text-2xl sm:text-3xl font-bold text-white leading-tight">
+                  Save reusable effect setups carefully
+                </h2>
+
+                <div className="space-y-4 text-sm sm:text-base leading-relaxed text-zinc-300">
+                  <p>
+                    After Effects can save selected effects, keyframes, and property settings as animation presets. This is useful for keeping your own shakes, transitions, color setups, and repeated adjustments organized.
+                  </p>
+                  <p>
+                    To save one, select the effects or keyframes you want to reuse, then use Animation &gt; Save Animation Preset. Keep your own files inside the user preset folder, not inside the application's default preset folders.
+                  </p>
+                </div>
+              </div>
+
+              {/* User Presets Paths */}
+              <div className="space-y-2.5">
+                {[
+                  {
+                    label: 'Windows',
+                    path: 'Documents\\Adobe\\After Effects [version]\\User Presets',
+                    key: 'win-presets',
+                  },
+                  {
+                    label: 'MacOS',
+                    path: '~/Documents/Adobe/After Effects [version]/User Presets',
+                    key: 'mac-presets',
+                  },
+                ].map((item) => (
+                  <div
+                    key={item.key}
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded border border-zinc-800 bg-[#121212] px-4 py-3 font-mono text-xs"
+                  >
+                    <div className="flex items-center gap-2 overflow-hidden">
+                      <span className="font-bold text-white shrink-0">{item.label}:</span>
+                      <span className="text-zinc-300 truncate">{item.path}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleCopy(item.path, item.key)}
+                      className="shrink-0 self-end sm:self-auto flex items-center gap-1.5 px-3 py-1 rounded border border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors"
+                    >
+                      {copiedKey === item.key ? (
+                        <>
+                          <Check className="h-3.5 w-3.5 text-white" />
+                          <span className="text-[11px] font-bold text-white">Copied</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-3.5 w-3.5" />
+                          <span className="text-[11px]">Copy</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              {/* Magic Bullet Looks presets */}
+              <div className="space-y-4 pt-4">
+                <h3 className="font-sans text-base sm:text-lg font-bold text-white">
+                  Magic Bullet Looks presets (.mblook / .rgx)
+                </h3>
+                <p className="text-sm sm:text-base leading-relaxed text-zinc-300">
+                  MBL presets use a different format than standard .ffx files. Version 13 and older use .mblook files. Version 14+ uses .rgx in your Documents folder. If you have old .mblook files on MBL 14+, import them inside Looks Builder — they convert to .rgx automatically.
+                </p>
+
+                <div className="space-y-2.5">
+                  {[
+                    {
+                      label: 'Windows (MBL v13-)',
+                      path: 'C:\\Program Files (x86)\\LooksBuilder\\Looks',
+                      key: 'win-mbl13',
+                    },
+                    {
+                      label: 'Mac (MBL v13-)',
+                      path: '/Library/Application Support/LooksBuilder/Looks/',
+                      key: 'mac-mbl13',
+                    },
+                    {
+                      label: 'Windows/Mac (MBL v14+)',
+                      path: 'Documents\\Red Giant\\Magic Bullet Looks\\Presets',
+                      key: 'winmac-mbl14',
+                    },
+                  ].map((item) => (
+                    <div
+                      key={item.key}
+                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded border border-zinc-800 bg-[#121212] px-4 py-3 font-mono text-xs"
+                    >
+                      <div className="flex items-center gap-2 overflow-hidden">
+                        <span className="font-bold text-white shrink-0">{item.label}:</span>
+                        <span className="text-zinc-300 truncate">{item.path}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleCopy(item.path, item.key)}
+                        className="shrink-0 self-end sm:self-auto flex items-center gap-1.5 px-3 py-1 rounded border border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors"
+                      >
+                        {copiedKey === item.key ? (
+                          <>
+                            <Check className="h-3.5 w-3.5 text-white" />
+                            <span className="text-[11px] font-bold text-white">Copied</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="h-3.5 w-3.5" />
+                            <span className="text-[11px]">Copy</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-3 pt-2 text-xs sm:text-sm text-zinc-400 leading-relaxed">
+                <p>
+                  Create folders by purpose: color, shakes, text, transitions, camera, utility. A small organized library is more useful than hundreds of unnamed files.
+                </p>
+                <p>
+                  Avoid dropping personal files into After Effects' built-in application preset folders. They may work, but updates and reinstalls can make them harder to manage.
+                </p>
+              </div>
+            </section>
+
+            <div className="border-b border-zinc-800" />
+
+            {/* ========================================================================= */}
+            {/* 6. SHORTCUTS */}
+            {/* ========================================================================= */}
+            <section id="shortcuts" className="scroll-mt-24 space-y-6">
+              <div className="space-y-4">
+                <div className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-400">
+                  Speed
+                </div>
+                <h2 className="font-serif text-2xl sm:text-3xl font-bold text-white leading-tight">
+                  Shortcuts worth learning first
+                </h2>
+
+                <p className="text-sm sm:text-base leading-relaxed text-zinc-300">
+                  Shortcuts are not about looking advanced. They reduce friction. Learn the keys you use every session before memorizing rare commands. On Mac, replace Ctrl with Cmd for most app-level shortcuts.
+                </p>
+              </div>
+
+              {/* Grouped Shortcuts Grid */}
+              <div className="space-y-5">
+                {[
+                  {
+                    group: 'Timeline basics',
+                    items: [
+                      { key: 'Space', desc: 'start or stop preview' },
+                      { key: '0 on numpad', desc: 'start or stop preview' },
+                      { key: 'I / O', desc: 'jump to the selected layer in or out point' },
+                      { key: 'B / N', desc: 'set the work area start or end' },
+                    ],
+                  },
+                  {
+                    group: 'Editing layers',
+                    items: [
+                      { key: 'Ctrl + Shift + D', desc: 'split selected layer' },
+                      { key: 'Alt + [', desc: 'trim layer start' },
+                      { key: 'Alt + ]', desc: 'trim layer end' },
+                      { key: 'Ctrl + D', desc: 'duplicate selected layer' },
+                    ],
+                  },
+                  {
+                    group: 'Common tools',
+                    items: [
+                      { key: 'V', desc: 'selection tool' },
+                      { key: 'H', desc: 'hand tool' },
+                      { key: 'G', desc: 'pen tool' },
+                      { key: 'Y', desc: 'pan-behind / anchor point tool' },
+                      { key: 'Ctrl + Alt + Shift + T', desc: 'new text layer' },
+                    ],
+                  },
+                  {
+                    group: 'Layer properties',
+                    items: [
+                      { key: 'P', desc: 'position' },
+                      { key: 'S', desc: 'scale' },
+                      { key: 'R', desc: 'rotation' },
+                      { key: 'T', desc: 'opacity' },
+                      { key: 'U', desc: 'show animated properties' },
+                      { key: 'L twice', desc: 'show audio waveform' },
+                    ],
+                  },
+                  {
+                    group: 'Project actions',
+                    items: [
+                      { key: 'Ctrl + S', desc: 'save' },
+                      { key: 'Ctrl + I', desc: 'import' },
+                      { key: 'Ctrl + K', desc: 'composition settings' },
+                      { key: 'Ctrl + Alt + Y', desc: 'new adjustment layer' },
+                      { key: 'Ctrl + Alt + Home', desc: 'center anchor point' },
+                    ],
+                  },
+                ].map((block) => (
+                  <div key={block.group} className="rounded border border-zinc-800 bg-[#121212] p-5">
+                    <h4 className="font-sans text-sm font-bold text-white mb-3">
+                      {block.group}
+                    </h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {block.items.map((item, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center justify-between gap-3 rounded bg-zinc-950 px-3 py-2 border border-zinc-800/80"
+                        >
+                          <kbd className="font-mono text-[11px] font-bold text-white bg-zinc-900 border border-zinc-700 px-2 py-0.5 rounded shrink-0">
+                            {item.key}
+                          </kbd>
+                          <span className="text-xs text-zinc-400 text-right truncate">
+                            {item.desc}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="space-y-3 pt-2 text-xs sm:text-sm text-zinc-400 leading-relaxed">
+                <p>
+                  Once these feel automatic, add keyframe shortcuts like Alt + Shift + P/S/R/T on Windows, or Option + P/S/R/T on Mac, for Position, Scale, Rotation, and Opacity. They save time when blocking out motion.
+                </p>
+                <p className="pt-2">
+                  New to installing downloads too? Read the{' '}
+                  <button
+                    type="button"
+                    onClick={() => setActiveModal('extract')}
+                    className="text-white font-semibold underline underline-offset-2 hover:text-zinc-300"
+                  >
+                    extraction guide
+                  </button>{' '}
+                  and{' '}
+                  <button
+                    type="button"
+                    onClick={() => setActiveModal('install')}
+                    className="text-white font-semibold underline underline-offset-2 hover:text-zinc-300"
+                  >
+                    installation guide
+                  </button>{' '}
+                  before running anything.
+                </p>
+              </div>
+            </section>
+
+            <div className="border-b border-zinc-800" />
+
+            {/* ========================================================================= */}
+            {/* 7. EDITING PACK */}
+            {/* ========================================================================= */}
+            <section id="editing-pack" className="scroll-mt-24 space-y-6">
+              <div className="space-y-4">
+                <div className="font-mono text-xs font-bold uppercase tracking-wider text-zinc-400">
+                  Starter Pack
+                </div>
+                <h2 className="font-serif text-2xl sm:text-3xl font-bold text-white leading-tight">
+                  Want a ready-made editing pack?
+                </h2>
+
+                <div className="space-y-4 text-sm sm:text-base leading-relaxed text-zinc-300">
+                  <p>
+                    Building your own presets is the best long-term skill, but a good starter pack can help you begin faster. It gives you working examples to study, reusable motion pieces, and a baseline style library while you learn how After Effects handles effects, keyframes, and adjustment layers.
+                  </p>
+                  <p>
+                    If you want that kind of starting point, 411's Essential Editing Pack is a one-time purchase built for edit workflows. The store page lists color corrections for After Effects 2023 and 2026+, Twixtor setups, Topaz settings, shakes, zooms, blurs, text effects, motion presets, styling presets, and setup guides.
+                  </p>
+                </div>
+              </div>
+
+              {/* 411's Essential Editing Pack Store Feature Box */}
+              <div className="rounded-lg border border-zinc-800 bg-[#121212] p-6 sm:p-7 space-y-6">
+                <div className="space-y-2">
+                  <div className="font-mono text-xs font-semibold text-zinc-400">
+                    scenepacks.com
+                  </div>
+                  <h3 className="font-serif text-2xl font-bold text-white">
+                    Essential Editing Pack
+                  </h3>
+                  <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed max-w-xl">
+                    Useful if you want organized presets to start with instead of building every shake, zoom, coloring, and text treatment from scratch.
+                  </p>
+                  <div className="pt-2">
+                    <a
+                      href="https://scenepacks.com"
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="inline-flex items-center gap-2 rounded bg-white px-4 py-2 font-mono text-xs font-bold text-black hover:bg-zinc-200 transition-colors"
+                    >
+                      <span>View the pack</span>
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </a>
+                  </div>
+                </div>
+
+                {/* Features Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-zinc-800">
+                  {[
+                    {
+                      title: 'Color corrections',
+                      desc: 'Looks for After Effects 2023 and 2026+.',
+                    },
+                    {
+                      title: 'Motion presets',
+                      desc: 'Shakes, zooms, blurs, glitches, panning, twitches, and styling presets.',
+                    },
+                    {
+                      title: 'Speed tools',
+                      desc: 'Twixtor setups for retimes and slow-motion workflows.',
+                    },
+                    {
+                      title: 'Upscale setup',
+                      desc: 'Topaz settings and screenshots for cleaner upscale exports.',
+                    },
+                    {
+                      title: 'Text effects',
+                      desc: 'Reusable text glow, gradient, scanline, turbulent, and wave presets.',
+                    },
+                    {
+                      title: 'Setup guides',
+                      desc: 'Included guides so you can import once and keep the pack organized.',
+                    },
+                  ].map((feat) => (
+                    <div
+                      key={feat.title}
+                      className="rounded border border-zinc-800 bg-black p-4 space-y-1"
+                    >
+                      <h4 className="font-sans text-xs sm:text-sm font-bold text-white">
+                        {feat.title}
+                      </h4>
+                      <p className="text-xs text-zinc-400 leading-relaxed">
+                        {feat.desc}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">
+                Treat any pack as a learning tool, not a replacement for understanding the effects. Open the presets, press U or UU, and study what changes were made.
+              </p>
+            </section>
+
+            <div className="border-b border-zinc-800" />
+
+            {/* ========================================================================= */}
+            {/* RELATED */}
+            {/* ========================================================================= */}
+            <section className="space-y-4 pt-2">
+              <h3 className="font-sans text-base sm:text-lg font-bold text-white">
+                Related
+              </h3>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono text-xs">
+                <button
+                  type="button"
+                  onClick={() => onNavigatePage?.('extract-guide')}
+                  className="rounded border border-zinc-800 bg-[#121212] p-3 text-center text-zinc-300 hover:border-zinc-600 hover:text-white transition-colors"
+                >
+                  Extract Guide
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveModal('install')}
+                  className="rounded border border-zinc-800 bg-[#121212] p-3 text-center text-zinc-300 hover:border-zinc-600 hover:text-white transition-colors"
+                >
+                  Install Guide
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onNavigatePage?.('windows')}
+                  className="rounded border border-zinc-800 bg-[#121212] p-3 text-center text-zinc-300 hover:border-zinc-600 hover:text-white transition-colors"
+                >
+                  Windows Catalog
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onNavigatePage?.('macos')}
+                  className="rounded border border-zinc-800 bg-[#121212] p-3 text-center text-zinc-300 hover:border-zinc-600 hover:text-white transition-colors"
+                >
+                  MacOS Catalog
+                </button>
+              </div>
+            </section>
+
+            {/* Sub-footer matching prompt */}
+            <footer className="pt-10 pb-6 border-t border-zinc-800 text-center space-y-4">
+              <div className="text-zinc-500 font-mono text-xs flex items-center justify-center gap-2">
+                <span>·</span>
+                <span>Made with &lt;3</span>
+                <span>·</span>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 font-mono text-xs text-zinc-400">
+                <button
+                  type="button"
+                  onClick={() => onNavigatePage?.('faq')}
+                  className="hover:text-white transition-colors"
+                >
+                  Status
+                </button>
+                <a
+                  href="#tor"
+                  onClick={(e) => e.preventDefault()}
+                  className="hover:text-white transition-colors"
+                >
+                  Tor mirror
+                </a>
+                <button
+                  type="button"
+                  onClick={() => onNavigatePage?.('faq')}
+                  className="hover:text-white transition-colors"
+                >
+                  About
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onNavigatePage?.('faq')}
+                  className="hover:text-white transition-colors"
+                >
+                  Privacy
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onNavigatePage?.('faq')}
+                  className="hover:text-white transition-colors"
+                >
+                  Credits
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onNavigatePage?.('faq')}
+                  className="hover:text-white transition-colors"
+                >
+                  FAQ
+                </button>
+              </div>
+
+              <div className="space-y-1 font-mono text-[11px] text-zinc-500">
+                <p>© 2026, Est. April 2026.</p>
+                <p>We don't host any downloads</p>
+              </div>
+            </footer>
           </div>
-        </section>
-
-        <div className="border-b border-[#1F1F1F]" />
-
-        {/* ========================================================================= */}
-        {/* RELATED DIRECTORIES */}
-        {/* ========================================================================= */}
-        <section className="pt-2">
-          <h4 className="font-mono text-xs uppercase tracking-widest text-[#71717A] mb-4">
-            System Runbooks & Catalogs
-          </h4>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono text-xs">
-            <button
-              type="button"
-              onClick={() => setActiveModal('extract')}
-              className="rounded border border-[#1F1F1F] bg-[#0D0D0D] p-3 text-center text-[#A1A1AA] hover:border-white hover:text-white transition-colors"
-            >
-              Extraction Runbook
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveModal('install')}
-              className="rounded border border-[#1F1F1F] bg-[#0D0D0D] p-3 text-center text-[#A1A1AA] hover:border-white hover:text-white transition-colors"
-            >
-              Installation Runbook
-            </button>
-            <button
-              type="button"
-              onClick={() => onNavigatePage && onNavigatePage('windows')}
-              className="rounded border border-[#1F1F1F] bg-[#0D0D0D] p-3 text-center text-[#A1A1AA] hover:border-white hover:text-white transition-colors"
-            >
-              Windows Catalog
-            </button>
-            <button
-              type="button"
-              onClick={() => onNavigatePage && onNavigatePage('macos')}
-              className="rounded border border-[#1F1F1F] bg-[#0D0D0D] p-3 text-center text-[#A1A1AA] hover:border-white hover:text-white transition-colors"
-            >
-              macOS Catalog
-            </button>
-          </div>
-        </section>
         </div>
       </div>
 
-      {/* ========================================================================= */}
-      {/* INTERACTIVE GUIDE MODALS */}
-      {/* ========================================================================= */}
+      {/* Extract / Install Guides Modal */}
       {activeModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-md border border-[#27272A] bg-[#0D0D0D] p-6 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-[#1F1F1F] pb-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 backdrop-blur-sm"
+          onClick={() => setActiveModal(null)}
+        >
+          <div
+            className="w-full max-w-lg rounded-md border border-zinc-800 bg-[#121212] p-6 shadow-2xl text-white"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
               <h3 className="font-sans text-base font-bold text-white uppercase tracking-wide">
-                {activeModal === 'extract' ? 'Archive Extraction Protocol' : 'Deployment Protocol'}
+                {activeModal === 'extract' ? 'Extract Guide' : 'Install Guide'}
               </h3>
               <button
                 type="button"
                 onClick={() => setActiveModal(null)}
-                className="text-[#71717A] hover:text-white transition-colors"
+                className="text-zinc-400 hover:text-white transition-colors"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             {activeModal === 'extract' ? (
-              <div className="mt-4 space-y-4 text-xs sm:text-sm text-[#A1A1AA]">
-                <div className="flex items-center gap-2 font-mono text-xs text-[#71717A]">
+              <div className="mt-4 space-y-4 text-xs sm:text-sm text-zinc-300">
+                <div className="flex items-center gap-2 font-mono text-xs text-zinc-400">
                   <Archive className="h-4 w-4 text-white" />
-                  <span>SEC.01 // 7-ZIP VERIFICATION PROTOCOL</span>
+                  <span>7-ZIP & ARCHIVE EXTRACTION</span>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   <div className="flex gap-2">
                     <span className="text-white font-bold">1.</span>
-                    <span>Download and verify official 64-bit 7-Zip binaries from 7-zip.org.</span>
+                    <span>Download and verify official 64-bit 7-Zip (Windows) or Keka (Mac).</span>
                   </div>
                   <div className="flex gap-2">
                     <span className="text-white font-bold">2.</span>
@@ -991,10 +889,10 @@ export const BeginnersGuide: React.FC<BeginnersGuideProps> = ({
                   </div>
                   <div className="flex gap-2">
                     <span className="text-white font-bold">3.</span>
-                    <span>When prompted for the container decryption key, input:</span>
+                    <span>When prompted for the container archive password, input:</span>
                   </div>
                   <div className="ml-5 flex items-center gap-2 pt-1">
-                    <span className="bg-[#181818] text-white px-3 py-1 rounded border border-[#27272A] font-mono font-bold">
+                    <span className="bg-zinc-950 text-white px-3 py-1 rounded border border-zinc-700 font-mono font-bold">
                       flame
                     </span>
                     <button
@@ -1002,51 +900,51 @@ export const BeginnersGuide: React.FC<BeginnersGuideProps> = ({
                       onClick={handleCopyPassword}
                       className="px-2.5 py-1 bg-white text-black font-mono font-bold rounded text-xs hover:bg-zinc-200 transition-colors"
                     >
-                      {copiedPassword ? 'COPIED' : 'COPY KEY'}
+                      {copiedPassword ? 'COPIED' : 'COPY PASSWORD'}
                     </button>
                   </div>
                 </div>
-                <div className="pt-2 flex justify-end">
+                <div className="pt-3 flex justify-end">
                   <button
                     type="button"
                     onClick={() => setActiveModal(null)}
                     className="rounded bg-white px-4 py-1.5 font-mono text-xs font-bold text-black hover:bg-zinc-200 transition-colors"
                   >
-                    CONFIRM
+                    CLOSE
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="mt-4 space-y-4 text-xs sm:text-sm text-[#A1A1AA]">
-                <div className="flex items-center gap-2 font-mono text-xs text-[#71717A]">
+              <div className="mt-4 space-y-4 text-xs sm:text-sm text-zinc-300">
+                <div className="flex items-center gap-2 font-mono text-xs text-zinc-400">
                   <Wrench className="h-4 w-4 text-white" />
-                  <span>SEC.02 // STANDARD RUNTIME DEPLOYMENT</span>
+                  <span>SOFTWARE & PLUGIN INSTALLATION</span>
                 </div>
                 <div className="space-y-2.5">
                   <div className="flex gap-2">
                     <span className="text-white font-bold">1.</span>
-                    <span>Temporarily pause active real-time heuristics to prevent false-positive quarantines on patch files.</span>
+                    <span>Add extraction & install folder exclusions in Windows Defender or macOS Gatekeeper.</span>
                   </div>
                   <div className="flex gap-2">
                     <span className="text-white font-bold">2.</span>
-                    <span>Execute the primary package installer (<code className="text-white">setup.exe</code>) with administrative rights.</span>
+                    <span>Execute the installer (<code className="text-white">Set-up.exe</code> or <code className="text-white">.pkg</code>) with administrative rights.</span>
                   </div>
                   <div className="flex gap-2">
                     <span className="text-white font-bold">3.</span>
-                    <span>If a medicine / patched binary directory is included, replace original files in the application root.</span>
+                    <span>If a patch/crack is included, copy replacement DLLs/executables into the application support folder.</span>
                   </div>
                   <div className="flex gap-2">
                     <span className="text-white font-bold">4.</span>
-                    <span>Establish outbound blocking rules in Windows Defender Firewall to maintain offline license persistence.</span>
+                    <span>Disable Adobe Genuine Software (AGS) service to maintain offline license persistence.</span>
                   </div>
                 </div>
-                <div className="pt-2 flex justify-end">
+                <div className="pt-3 flex justify-end">
                   <button
                     type="button"
                     onClick={() => setActiveModal(null)}
                     className="rounded bg-white px-4 py-1.5 font-mono text-xs font-bold text-black hover:bg-zinc-200 transition-colors"
                   >
-                    CONFIRM
+                    CLOSE
                   </button>
                 </div>
               </div>
@@ -1054,6 +952,6 @@ export const BeginnersGuide: React.FC<BeginnersGuideProps> = ({
           </div>
         </div>
       )}
-    </div>
+    </main>
   );
 };

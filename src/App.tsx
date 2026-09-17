@@ -16,6 +16,10 @@ import { NewDrops } from './components/NewDrops';
 import { About } from './components/About';
 import { FAQ } from './components/FAQ';
 import { WindowsPage } from './components/WindowsPage';
+import { MacOSPage } from './components/MacOSPage';
+import { GuidesPage } from './components/GuidesPage';
+import { ExtractGuide } from './components/ExtractGuide';
+import { InstallGuide } from './components/InstallGuide';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<PageId>('home');
@@ -33,6 +37,8 @@ export default function App() {
       'windows',
       'macos',
       'beginners-guide',
+      'extract-guide',
+      'install-guide',
       'tutorials',
       'guides',
       'new-drops',
@@ -143,8 +149,15 @@ export default function App() {
         );
 
       case 'macos':
+        return (
+          <MacOSPage
+            onBack={() => navigateTo('home')}
+            onNavigatePage={(page) => navigateTo(page as PageId)}
+            onOpenSearch={() => setIsSearchOpen(true)}
+          />
+        );
+
       case 'tutorials':
-      case 'guides':
         return (
           <CategoryPage
             categoryId={currentPage as CategoryId}
@@ -153,9 +166,33 @@ export default function App() {
           />
         );
 
+      case 'guides':
+        return (
+          <GuidesPage
+            onBack={() => navigateTo('home')}
+            onNavigatePage={(page) => navigateTo(page as PageId)}
+          />
+        );
+
       case 'beginners-guide':
         return (
           <BeginnersGuide
+            onBack={() => navigateTo('home')}
+            onNavigatePage={(page) => navigateTo(page as PageId)}
+          />
+        );
+
+      case 'extract-guide':
+        return (
+          <ExtractGuide
+            onBack={() => navigateTo('home')}
+            onNavigatePage={(page) => navigateTo(page as PageId)}
+          />
+        );
+
+      case 'install-guide':
+        return (
+          <InstallGuide
             onBack={() => navigateTo('home')}
             onNavigatePage={(page) => navigateTo(page as PageId)}
           />
@@ -216,7 +253,7 @@ export default function App() {
       />
 
       {/* Main Content Area */}
-      <main className="min-h-[calc(100vh-14rem)]">
+      <main key={currentPage} className="page-depth min-h-[calc(100vh-14rem)]">
         {renderCurrentPage()}
       </main>
 

@@ -14,6 +14,8 @@ export type CategoryId =
 export type PageId =
   | 'home'
   | CategoryId
+  | 'extract-guide'
+  | 'install-guide'
   | 'about'
   | 'faq';
 
