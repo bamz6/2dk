@@ -1,14 +1,14 @@
 import React from 'react';
-import { ArrowUp, ExternalLink, ShieldCheck, MessageSquare } from 'lucide-react';
+import { ArrowUp, MessageSquare } from 'lucide-react';
 import { PageId } from '../types';
-import { DISCORD_INVITE_URL, GITHUB_REPO_URL, LAST_VERIFIED_DATE } from '../lib/constants';
+import { DISCORD_INVITE_URL } from '../lib/constants';
 
 interface FooterProps {
   onNavigate: (page: PageId) => void;
-  onOpenVerification: () => void;
+  onOpenVerification?: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenVerification }) => {
+export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -70,28 +70,14 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenVerification }
           </div>
         </div>
 
-        <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-[11px] text-[#71717A]">
-          <div className="flex items-center gap-3 flex-wrap">
-            <button
-              onClick={onOpenVerification}
-              className="flex items-center gap-1.5 hover:text-white transition-colors"
-            >
-              <ShieldCheck className="h-3.5 w-3.5" />
-              <span>COMMUNITY AUDITED // {LAST_VERIFIED_DATE}</span>
-            </button>
-            <span>•</span>
-            <span>NO SPONSORSHIPS ACCEPTED</span>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <button
-              onClick={scrollToTop}
-              className="flex items-center gap-1 text-[#A1A1AA] hover:text-white transition-colors"
-            >
-              <span>BACK TO TOP</span>
-              <ArrowUp className="h-3 w-3" />
-            </button>
-          </div>
+        <div className="mt-8 flex items-center justify-end text-[11px] text-[#71717A]">
+          <button
+            onClick={scrollToTop}
+            className="flex items-center gap-1 text-[#A1A1AA] hover:text-white transition-colors"
+          >
+            <span>BACK TO TOP</span>
+            <ArrowUp className="h-3 w-3" />
+          </button>
         </div>
       </div>
     </footer>

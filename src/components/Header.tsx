@@ -58,7 +58,7 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={() => onNavigate('guides')}
             className={`rounded px-2.5 py-1.5 transition-colors focus:outline-none ${
-              currentPage === 'guides' || currentPage === 'beginners-guide'
+              currentPage === 'guides' || currentPage === 'beginners-guide' || currentPage === 'tutorials'
                 ? 'bg-white text-black'
                 : 'text-[#A1A1AA] hover:bg-white hover:text-black'
             }`}

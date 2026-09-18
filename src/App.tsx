@@ -18,6 +18,7 @@ import { FAQ } from './components/FAQ';
 import { WindowsPage } from './components/WindowsPage';
 import { MacOSPage } from './components/MacOSPage';
 import { GuidesPage } from './components/GuidesPage';
+import { VisualTutorials } from './components/VisualTutorials';
 import { ExtractGuide } from './components/ExtractGuide';
 import { InstallGuide } from './components/InstallGuide';
 
@@ -159,10 +160,9 @@ export default function App() {
 
       case 'tutorials':
         return (
-          <CategoryPage
-            categoryId={currentPage as CategoryId}
+          <VisualTutorials
             onBack={() => navigateTo('home')}
-            onNavigateCategory={(id) => navigateTo(id)}
+            onNavigatePage={(page) => navigateTo(page as PageId)}
           />
         );
 
