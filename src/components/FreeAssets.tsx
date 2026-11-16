@@ -4,14 +4,12 @@ import {
   ExternalLink,
   Search,
   X,
-  MessageSquare,
   Info,
   Check,
   Star,
   Send,
 } from 'lucide-react';
 import { FREE_ASSET_CATEGORIES, AssetCategory, AssetGroup, AssetResource } from '../data/freeAssetsData';
-import { DISCORD_INVITE_URL } from '../lib/constants';
 
 interface FreeAssetsProps {
   onBack: () => void;
@@ -250,18 +248,6 @@ export const FreeAssets: React.FC<FreeAssetsProps> = ({ onBack, onNavigatePage }
               <span>
                 Everything here is free. Some sites have paid tiers — we only link to the free parts.
               </span>
-            </div>
-            <div className="flex items-center gap-1.5 shrink-0 text-xs text-zinc-500">
-              <span>Found a dead link or want to suggest something?</span>
-              <span>Ping us on</span>
-              <a
-                href={DISCORD_INVITE_URL}
-                target="_blank"
-                rel="noreferrer noopener"
-                className="text-white hover:text-zinc-300 underline font-semibold"
-              >
-                Discord.
-              </a>
             </div>
           </div>
 
@@ -525,15 +511,6 @@ export const FreeAssets: React.FC<FreeAssetsProps> = ({ onBack, onNavigatePage }
                   >
                     Done
                   </button>
-                  <a
-                    href={DISCORD_INVITE_URL}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    className="inline-flex items-center gap-2 rounded border border-zinc-800 bg-[#141414] px-4 py-2 text-sm font-medium text-white hover:border-zinc-600 transition-colors"
-                  >
-                    <MessageSquare className="h-4 w-4 text-zinc-300" />
-                    <span>Ping on Discord</span>
-                  </a>
                 </div>
               </div>
             ) : (

@@ -132,21 +132,38 @@ export const FEATURED_GUIDES: GuideItem[] = [
     description: 'Fix Adobe unlicensed popups, firewall checks, overwritten cracks, and update-related activation issues.',
     category: 'featured',
     content: {
-      overview: 'Stop the persistent "This unlicensed Adobe app will be disabled soon" popup banner on Windows by disabling the background genuine checker and blocking telemetry IP addresses.',
+      overview: 'Stop the persistent "This unlicensed Adobe app will be disabled soon" popup banner on Windows by terminating Adobe Genuine Service (AGS), adding outbound firewall block rules, and redirecting telemetry domains in your hosts file.',
+      requirements: [
+        'Administrator privileges on Windows 10 or Windows 11',
+        'Windows Defender Firewall with Advanced Security or PowerShell',
+        'GenP 3.4.x or original pre-activated setup installer (if files were overwritten)',
+      ],
       steps: [
         {
-          title: '1. Disable Adobe Genuine Software Integrity Service',
-          desc: 'Press Win + R, type services.msc, and press Enter. Locate "Adobe Genuine Software Integrity Service". Right-click > Properties > Startup type: Disabled. Click Stop, then Apply.',
+          title: '1. Terminate & Disable Adobe Genuine Service (AGS)',
+          desc: 'Press Win + R, type services.msc, and press Enter. Locate "Adobe Genuine Software Integrity Service", right-click > Properties > Startup type: Disabled. Click Stop, then Apply. Alternatively, run the PowerShell command below as Administrator.',
           command: 'sc stop "AGSService" && sc config "AGSService" start= disabled',
+          tip: 'Rename or delete C:\\Program Files (x86)\\Common Files\\Adobe\\AdobeGCClient to prevent AGS from respawning.',
         },
         {
-          title: '2. Block Outbound Network Access via Firewall',
-          desc: 'Open Windows Defender Firewall with Advanced Security. Select Outbound Rules > New Rule > Program > browse to AfterFX.exe (and Adobe Premiere Pro.exe) > Action: Block the connection > Apply to Domain, Private, and Public.',
-          tip: 'Make sure not to block Adobe Creative Cloud if you rely on Adobe Fonts, only block the specific host executable.',
+          title: '2. Add Outbound Firewall Block to Application Executables',
+          desc: 'Open Windows Defender Firewall with Advanced Security > Outbound Rules > New Rule > Program > Block the connection on Domain, Private, and Public for AfterFX.exe, Adobe Premiere Pro.exe, and Photoshop.exe.',
+          command: 'New-NetFirewallRule -DisplayName "Block Adobe After Effects Outbound" -Direction Outbound -Program "C:\\Program Files\\Adobe\\Adobe After Effects 2025\\Support Files\\AfterFX.exe" -Action Block',
+          tip: 'Blocking the executable from outbound traffic permanently stops license validation without affecting offline rendering or third-party GPU plugins.',
         },
         {
-          title: '3. Re-apply GenP or Pre-activated Patch',
-          desc: 'If Creative Cloud automatically updated your executable and removed the patched code, run GenP 3.x, click Search, and click Patch on the affected applications.',
+          title: '3. Add Licensing Blocklist to Hosts File',
+          desc: 'Open Notepad as Administrator, open C:\\Windows\\System32\\drivers\\etc\\hosts, and append 0.0.0.0 genuine.adobe.com and 0.0.0.0 cc-api-data.adobe.io to silently sinkhole Adobe telemetry requests.',
+          command: '0.0.0.0 genuine.adobe.com\n0.0.0.0 prod.adobegenuine.com\n0.0.0.0 cc-api-data.adobe.io\n0.0.0.0 ic.adobe.io',
+        },
+        {
+          title: '4. Disable Creative Cloud Auto-Updates',
+          desc: 'Open Creative Cloud Desktop > Preferences (Ctrl + ,) > Apps > Toggle OFF "Auto-update". This prevents Adobe from silently replacing your patched binaries with unactivated ones during background updates.',
+        },
+        {
+          title: '5. Re-apply GenP or Pre-activated Patch',
+          desc: 'If the warning banner is already active, close all Adobe programs, launch GenP as Administrator, click Search (magnifying glass), and click Patch (pill icon). Once status shows "Medicine applied!", re-launch the application.',
+          tip: 'Clear cached warning states by deleting %LOCALAPPDATA%\\Adobe\\OOBE and %LOCALAPPDATA%\\Adobe\\AdobeGCClient.',
         },
       ],
     },

@@ -629,7 +629,7 @@ export const InstallGuide: React.FC<InstallGuideProps> = ({
               All Guides
             </button>
           </div>
-          <div>Keyflame / 3DFX Windows Reference</div>
+          <div>Keyflame / 2dk Windows Reference</div>
         </footer>
       </div>
     </main>

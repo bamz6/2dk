@@ -51,6 +51,54 @@ async function startServer() {
     }
   }));
 
+  // Fallback alias resolver for /videos/:file before 404
+  app.get('/videos/:file', (req, res, next) => {
+    try {
+      const requestedFile = req.params.file;
+      const parsed = path.parse(requestedFile);
+      const meta = getVideosMeta();
+
+      // Check if requestedFile is a tutorial ID (e.g. win-adobe-cc.mp4 -> recordedName adobe-windows.mp4)
+      const recordedName = meta[parsed.name]?.name;
+      if (recordedName) {
+        const customPath = path.join(PUBLIC_VIDEOS_DIR, recordedName);
+        if (fs.existsSync(customPath)) {
+          return res.sendFile(customPath, {
+            acceptRanges: true,
+            headers: {
+              'Content-Type': recordedName.endsWith('.webm') ? 'video/webm' : 'video/mp4',
+            },
+          });
+        }
+      }
+
+      // Check if requestedFile is a recorded name that matches an ID
+      for (const [id, m] of Object.entries(meta)) {
+        if (m.name === requestedFile || m.name === parsed.base) {
+          for (const ext of ['.mp4', '.webm', '.mov']) {
+            const idPath = path.join(PUBLIC_VIDEOS_DIR, `${id}${ext}`);
+            if (fs.existsSync(idPath)) {
+              return res.sendFile(idPath, {
+                acceptRanges: true,
+                headers: {
+                  'Content-Type': ext === '.webm' ? 'video/webm' : 'video/mp4',
+                },
+              });
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Video fallback lookup error:', e);
+    }
+    next();
+  });
+
+  // Explicit 404 handler for /videos so missing video files don't return index.html via Vite SPA fallback
+  app.use('/videos', (req, res) => {
+    res.status(404).json({ error: 'Video file not found' });
+  });
+
   // GET /api/videos - returns list of all available server-hosted videos & links
   app.get('/api/videos', (req, res) => {
     try {
@@ -63,6 +111,12 @@ async function startServer() {
         const parsed = path.parse(file);
         if (['.mp4', '.webm', '.mov', '.ogg'].includes(parsed.ext.toLowerCase())) {
           fileIds.add(parsed.name);
+          // Check if this filename matches any meta entry's recorded name
+          for (const [id, m] of Object.entries(meta)) {
+            if (m.name === file || m.name === parsed.base) {
+              fileIds.add(id);
+            }
+          }
         }
       }
 
@@ -97,10 +151,124 @@ async function startServer() {
       }
     }
 
+    // Also check if stored by its recorded meta filename (e.g. adobe-windows.mp4)
+    const recordedName = meta[cleanId]?.name;
+    if (recordedName) {
+      const customPath = path.join(PUBLIC_VIDEOS_DIR, recordedName);
+      if (fs.existsSync(customPath)) {
+        return res.sendFile(customPath, {
+          acceptRanges: true,
+          headers: {
+            'Content-Type': recordedName.endsWith('.webm') ? 'video/webm' : 'video/mp4',
+          },
+        });
+      }
+    }
+
     res.status(404).json({ error: 'Video file not found' });
   });
 
-  // POST /api/videos/upload - binary stream upload for a video file
+  // POST /api/videos/upload-chunk - chunked binary upload for reliably uploading files of any size
+  const CHUNKS_DIR = path.join(PUBLIC_VIDEOS_DIR, '.upload-temp');
+  if (!fs.existsSync(CHUNKS_DIR)) {
+    fs.mkdirSync(CHUNKS_DIR, { recursive: true });
+  }
+
+  app.post('/api/videos/upload-chunk', (req, res) => {
+    const id = req.query.id as string;
+    const filename = (req.query.filename as string) || `${id}.mp4`;
+    const chunkIndex = parseInt(req.query.chunkIndex as string, 10);
+    const totalChunks = parseInt(req.query.totalChunks as string, 10);
+
+    if (!id || isNaN(chunkIndex) || isNaN(totalChunks)) {
+      return res.status(400).json({ error: 'Missing required chunk parameters' });
+    }
+
+    const cleanId = id.replace(/[^a-zA-Z0-9_-]/g, '');
+    const tempFile = path.join(CHUNKS_DIR, `${cleanId}.part`);
+
+    // If first chunk, remove any leftover partial file
+    if (chunkIndex === 0 && fs.existsSync(tempFile)) {
+      try {
+        fs.unlinkSync(tempFile);
+      } catch {}
+    }
+
+    const writeStream = fs.createWriteStream(tempFile, { flags: chunkIndex === 0 ? 'w' : 'a' });
+    req.pipe(writeStream);
+
+    writeStream.on('finish', () => {
+      // If this is the last chunk, finalize the file
+      if (chunkIndex === totalChunks - 1) {
+        const ext = path.extname(filename) || '.mp4';
+        const targetPath = path.join(PUBLIC_VIDEOS_DIR, `${cleanId}${ext}`);
+
+        try {
+          fs.renameSync(tempFile, targetPath);
+        } catch {
+          fs.copyFileSync(tempFile, targetPath);
+          try {
+            fs.unlinkSync(tempFile);
+          } catch {}
+        }
+
+        // Record metadata
+        const meta = getVideosMeta();
+        meta[cleanId] = {
+          name: filename,
+          updatedAt: Date.now(),
+        };
+        saveVideosMeta(meta);
+
+        // Also save friendly filename alias copy if different
+        if (filename && filename !== `${cleanId}${ext}`) {
+          const aliasPath = path.join(PUBLIC_VIDEOS_DIR, filename);
+          try {
+            fs.copyFileSync(targetPath, aliasPath);
+          } catch (e) {
+            console.warn('Could not copy alias file:', e);
+          }
+        }
+
+        // Also copy to dist/videos if dist exists
+        const distVideosDir = path.join(process.cwd(), 'dist', 'videos');
+        if (fs.existsSync(path.join(process.cwd(), 'dist'))) {
+          if (!fs.existsSync(distVideosDir)) {
+            fs.mkdirSync(distVideosDir, { recursive: true });
+          }
+          try {
+            fs.copyFileSync(targetPath, path.join(distVideosDir, `${cleanId}${ext}`));
+            if (filename && filename !== `${cleanId}${ext}`) {
+              fs.copyFileSync(targetPath, path.join(distVideosDir, filename));
+            }
+          } catch {}
+        }
+
+        return res.json({
+          success: true,
+          completed: true,
+          id: cleanId,
+          url: `/api/videos/${cleanId}`,
+          filename,
+        });
+      }
+
+      // Intermediate chunk finished successfully
+      res.json({
+        success: true,
+        completed: false,
+        chunkIndex,
+        totalChunks,
+      });
+    });
+
+    writeStream.on('error', (err) => {
+      console.error('Chunk upload error:', err);
+      res.status(500).json({ error: err.message });
+    });
+  });
+
+  // POST /api/videos/upload - binary stream upload for a video file (legacy / small file fallback)
   app.post('/api/videos/upload', (req, res) => {
     const id = req.query.id as string;
     const filename = (req.query.filename as string) || `${id}.mp4`;
@@ -126,6 +294,16 @@ async function startServer() {
       };
       saveVideosMeta(meta);
 
+      // Also save friendly filename alias copy if different from cleanId.ext
+      if (filename && filename !== `${cleanId}${ext}`) {
+        const aliasPath = path.join(PUBLIC_VIDEOS_DIR, filename);
+        try {
+          fs.copyFileSync(targetPath, aliasPath);
+        } catch (e) {
+          console.warn('Could not copy alias file:', e);
+        }
+      }
+
       // Also copy to dist/videos if dist exists
       const distVideosDir = path.join(process.cwd(), 'dist', 'videos');
       if (fs.existsSync(path.join(process.cwd(), 'dist'))) {
@@ -134,6 +312,9 @@ async function startServer() {
         }
         try {
           fs.copyFileSync(targetPath, path.join(distVideosDir, `${cleanId}${ext}`));
+          if (filename && filename !== `${cleanId}${ext}`) {
+            fs.copyFileSync(targetPath, path.join(distVideosDir, filename));
+          }
         } catch {}
       }
 

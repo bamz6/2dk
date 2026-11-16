@@ -1,12 +1,10 @@
 import React from 'react';
-import { Search, MessageSquare, ExternalLink } from 'lucide-react';
 import { PageId } from '../types';
-import { DISCORD_INVITE_URL } from '../lib/constants';
 
 interface HeaderProps {
   currentPage: PageId;
   onNavigate: (page: PageId) => void;
-  onOpenSearch: () => void;
+  onOpenSearch?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -23,7 +21,7 @@ export const Header: React.FC<HeaderProps> = ({
           className="group flex items-center gap-2 text-left focus:outline-none"
         >
           <span className="font-mono text-xl font-extrabold tracking-tighter text-white transition-colors group-hover:text-zinc-300">
-            3DFX
+            2dk
           </span>
           <span className="hidden font-mono text-[10px] text-[#71717A] sm:inline-block border border-[#1F1F1F] px-1.5 py-0.5 rounded">
             v2.4 // SPEC
@@ -32,18 +30,6 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Right Navigation */}
         <nav className="flex items-center gap-1 sm:gap-4 font-mono text-xs">
-          {/* Search Trigger */}
-          <button
-            onClick={onOpenSearch}
-            className="flex items-center gap-2 rounded px-2.5 py-1.5 text-[#A1A1AA] hover:bg-white hover:text-black transition-colors border border-transparent hover:border-white focus:outline-none"
-          >
-            <Search className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Search</span>
-            <kbd className="hidden lg:inline-block rounded bg-[#1F1F1F] px-1.5 py-0.5 text-[10px] text-[#71717A]">
-              Ctrl+K
-            </kbd>
-          </button>
-
           <button
             onClick={() => onNavigate('new-drops')}
             className={`rounded px-2.5 py-1.5 transition-colors focus:outline-none ${
@@ -87,18 +73,6 @@ export const Header: React.FC<HeaderProps> = ({
           >
             FAQ
           </button>
-
-          {/* Discord CTA */}
-          <a
-            href={DISCORD_INVITE_URL}
-            target="_blank"
-            rel="noreferrer noopener"
-            className="ml-1 flex items-center justify-center rounded-full p-2 text-[#A1A1AA] hover:bg-white hover:text-black transition-colors focus:outline-none"
-            title="Join 3DFX Discord"
-            aria-label="Discord Community"
-          >
-            <MessageSquare className="h-4 w-4" />
-          </a>
         </nav>
       </div>
     </header>

@@ -10,6 +10,11 @@ import {
 import { PageId } from '../types';
 import { TUTORIALS_DATA, TutorialItem } from '../data/tutorialsData';
 import { TutorialVideoPlayer } from './TutorialVideoPlayer';
+import {
+  getAllCustomVideos,
+  fetchServerVideos,
+  uploadVideoToServer,
+} from '../lib/videoStorage';
 
 interface VisualTutorialsProps {
   onBack: () => void;
@@ -24,6 +29,32 @@ export const VisualTutorials: React.FC<VisualTutorialsProps> = ({
 }) => {
   const [activeSection, setActiveSection] = useState<SectionKey>('index');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Background sync: if user previously uploaded videos into their browser's IndexedDB,
+  // automatically sync them to the server so they persist for all visitors
+  useEffect(() => {
+    async function syncLocalVideosToServer() {
+      try {
+        const [localVideos, serverData] = await Promise.all([
+          getAllCustomVideos(),
+          fetchServerVideos(),
+        ]);
+
+        if (!localVideos || localVideos.length === 0) return;
+
+        const hostedSet = new Set(serverData.hostedVideos || []);
+        for (const vid of localVideos) {
+          if (!hostedSet.has(vid.id) && vid.blob) {
+            await uploadVideoToServer(vid.id, vid.blob, vid.name);
+          }
+        }
+      } catch (err) {
+        console.warn('Silent local video sync completed:', err);
+      }
+    }
+
+    syncLocalVideosToServer();
+  }, []);
 
   // Scroll spy for sidebar section highlighting
   useEffect(() => {

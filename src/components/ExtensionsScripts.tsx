@@ -6,7 +6,6 @@ import {
   Copy,
   Check,
   Layers,
-  MessageSquare,
   ChevronRight,
   ChevronDown,
   Download,
@@ -18,7 +17,6 @@ import {
   ExtensionSectionId,
   ExtensionItem,
 } from '../data/extensionsData';
-import { DISCORD_INVITE_URL } from '../lib/constants';
 
 interface ExtensionsScriptsProps {
   onBack: () => void;
@@ -594,26 +592,6 @@ export const ExtensionsScripts: React.FC<ExtensionsScriptsProps> = ({
                     </button>
                   </li>
                 </ul>
-              </div>
-
-              {/* Need a specific tool? Discord Request Box */}
-              <div className="rounded border border-zinc-800 bg-[#0D0D0D] p-5 space-y-3">
-                <div className="flex items-center gap-2 text-xs font-bold tracking-wider text-white uppercase">
-                  <MessageSquare className="h-4 w-4 text-white" />
-                  <span>Need a specific tool?</span>
-                </div>
-                <p className="text-xs text-zinc-400 leading-relaxed">
-                  If an extension or script is missing, send the name in Discord. We will verify it before adding a public mirror.
-                </p>
-                <a
-                  href={DISCORD_INVITE_URL}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded border border-zinc-700 bg-white px-3 py-2 text-xs font-semibold text-black transition-colors hover:bg-zinc-200"
-                >
-                  <span>Request on Discord</span>
-                  <ExternalLink className="h-3.5 w-3.5 text-black" />
-                </a>
               </div>
             </div>
           </aside>

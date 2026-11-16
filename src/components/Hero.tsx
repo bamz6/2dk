@@ -54,7 +54,7 @@ export const Hero: React.FC<HeroProps> = ({
         <div className="max-w-3xl">
           {/* Main Title */}
           <h1 className="font-sans text-6xl sm:text-8xl font-black tracking-tighter text-white leading-none">
-            3DFX
+            2dk
           </h1>
 
           {/* Subtitle */}

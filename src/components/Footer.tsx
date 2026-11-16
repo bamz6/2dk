@@ -1,7 +1,6 @@
 import React from 'react';
-import { ArrowUp, MessageSquare } from 'lucide-react';
+import { ArrowUp } from 'lucide-react';
 import { PageId } from '../types';
-import { DISCORD_INVITE_URL } from '../lib/constants';
 
 interface FooterProps {
   onNavigate: (page: PageId) => void;
@@ -19,7 +18,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 pb-8 border-b border-[#1F1F1F]">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-base font-bold tracking-tighter text-white">3DFX</span>
+              <span className="text-base font-bold tracking-tighter text-white">2dk</span>
               <span className="text-[#71717A] text-[11px]">// CURATED REPOSITORY</span>
             </div>
             <p className="mt-2 font-sans text-xs text-[#A1A1AA] max-w-md">
@@ -58,15 +57,6 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             >
               FAQ
             </button>
-            <a
-              href={DISCORD_INVITE_URL}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="flex items-center gap-1 text-[#A1A1AA] hover:text-white transition-colors"
-            >
-              <MessageSquare className="h-3.5 w-3.5" />
-              <span>Discord</span>
-            </a>
           </div>
         </div>
 

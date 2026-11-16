@@ -16,6 +16,7 @@ export type PageId =
   | CategoryId
   | 'extract-guide'
   | 'install-guide'
+  | 'unlicensed-fix'
   | 'about'
   | 'faq';
 

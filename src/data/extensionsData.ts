@@ -1,5 +1,3 @@
-import { DISCORD_INVITE_URL } from '../lib/constants';
-
 export interface ExtensionItem {
   id: string;
   name: string;

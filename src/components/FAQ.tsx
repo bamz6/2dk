@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Plus, Minus, MessageSquare } from 'lucide-react';
-import { DISCORD_INVITE_URL } from '../lib/constants';
+import { ArrowLeft, Plus, Minus } from 'lucide-react';
 
 interface FAQProps {
   onBack: () => void;
@@ -13,11 +12,11 @@ interface QA {
 
 const FAQS: QA[] = [
   {
-    q: 'Why is it called 3DFX?',
-    a: 'It is a deliberate tribute to 3dfx Interactive — the legendary creators of the Voodoo graphics chipsets that defined hardware 3D acceleration in the late 1990s. The name embodies a focus on raw hardware efficiency, technical utility, and uncompromising performance over commercial fluff.',
+    q: 'Why is it called 2dk?',
+    a: '2dk represents a streamlined, distraction-free creative index built for 2D/3D motion design and digital post-production — focusing on raw efficiency, technical utility, and uncompromising performance over commercial fluff.',
   },
   {
-    q: 'Are all the tools and resources listed on 3DFX truly free?',
+    q: 'Are all the tools and resources listed on 2dk truly free?',
     a: 'Yes. Everything listed is either completely free and open-source (FOSS), freeware, or offers a permanent free functional tier (like the free edition of DaVinci Resolve). If a script or plugin is "Name Your Own Price", we explicitly note how to obtain it for $0.',
   },
   {
@@ -34,11 +33,7 @@ const FAQS: QA[] = [
   },
   {
     q: 'Can I use the free assets (SFX, footage, LUTs) in commercial client projects?',
-    a: 'Most asset repositories featured on 3DFX (such as Freesound CC0, Pexels Video, and Poly Haven) allow commercial usage without licensing fees. However, licenses vary (e.g. CC-BY requires attribution, while CC0 does not). We clearly tag the licensing type on each resource card.',
-  },
-  {
-    q: 'How can I submit a new script, tool, or bug report?',
-    a: 'Join our community Discord. We maintain an active #submissions channel where creators and editors post new tools, report broken URLs, or request specific workflow guides.',
+    a: 'Most asset repositories featured on 2dk (such as Freesound CC0, Pexels Video, and Poly Haven) allow commercial usage without licensing fees. However, licenses vary (e.g. CC-BY requires attribution, while CC0 does not). We clearly tag the licensing type on each resource card.',
   },
 ];
 
@@ -70,7 +65,7 @@ export const FAQ: React.FC<FAQProps> = ({ onBack }) => {
           Frequently Asked Questions
         </h1>
         <p className="mt-3 max-w-2xl text-sm sm:text-base text-[#A1A1AA]">
-          Clarifications on 3DFX curation standards, link verification, licensing, and naming origins.
+          Clarifications on 2dk curation standards, link verification, licensing, and naming origins.
         </p>
       </div>
 
@@ -105,23 +100,6 @@ export const FAQ: React.FC<FAQProps> = ({ onBack }) => {
             </div>
           );
         })}
-      </div>
-
-      {/* Still have questions? */}
-      <div className="mt-12 max-w-3xl rounded-md border border-[#1F1F1F] bg-[#0D0D0D] p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 font-mono text-xs">
-        <div>
-          <span className="text-white font-bold block">HAVE ANOTHER QUESTION?</span>
-          <span className="text-[#71717A] text-[11px]">Our editing community is active daily on Discord.</span>
-        </div>
-        <a
-          href={DISCORD_INVITE_URL}
-          target="_blank"
-          rel="noreferrer noopener"
-          className="inline-flex items-center gap-1.5 rounded bg-white px-4 py-2 font-bold text-black hover:bg-zinc-200 transition-colors shrink-0"
-        >
-          <MessageSquare className="h-3.5 w-3.5" />
-          <span>ASK IN DISCORD</span>
-        </a>
       </div>
     </div>
   );

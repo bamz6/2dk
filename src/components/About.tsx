@@ -1,6 +1,5 @@
 import React from 'react';
-import { ArrowLeft, ShieldCheck, Heart, Terminal, FileCheck2, ExternalLink } from 'lucide-react';
-import { DISCORD_INVITE_URL } from '../lib/constants';
+import { ArrowLeft, ShieldCheck, Heart, Terminal, FileCheck2 } from 'lucide-react';
 
 interface AboutProps {
   onBack: () => void;
@@ -25,7 +24,7 @@ export const About: React.FC<AboutProps> = ({ onBack }) => {
       {/* Header */}
       <div className="border-b border-[#1F1F1F] pb-8">
         <h1 className="font-sans text-3xl sm:text-5xl font-extrabold tracking-tight text-white">
-          About 3DFX
+          About 2dk
         </h1>
         <p className="mt-3 max-w-2xl text-sm sm:text-base text-[#A1A1AA]">
           An independent, zero-commercial directory of tools, encoders, extensions, and reference guides built for video editors and VFX artists.
@@ -42,12 +41,12 @@ export const About: React.FC<AboutProps> = ({ onBack }) => {
             The video editing ecosystem is flooded with bloated "SaaS tools", paywalled plugins, fake download portals with hidden adware, and generic clickbait top-10 articles. Finding a straightforward utility to batch-transcode footage into ProRes, clean an audio track, or copy an easing curve without paying $60/month or risking a trojan has become needlessly difficult.
           </p>
           <p className="mt-3">
-            3DFX is an unmonetized, community-maintained technical index. Every tool, script, asset pack, and tutorial cataloged here has been tested in real production workflows.
+            2dk is an unmonetized, community-maintained technical index. Every tool, script, asset pack, and tutorial cataloged here has been tested in real production workflows.
           </p>
         </div>
 
         <div className="rounded-md border border-[#1F1F1F] bg-[#0D0D0D] p-6 font-mono text-xs space-y-3">
-          <div className="text-white font-bold text-sm">THE 3DFX PRINCIPLES:</div>
+          <div className="text-white font-bold text-sm">THE 2dk PRINCIPLES:</div>
           <div className="space-y-2 text-[#A1A1AA] font-sans">
             <p>• <strong>Strictly Black & White:</strong> No bright neon marketing gradients or visual distraction. A technical datasheet aesthetic designed for professionals.</p>
             <p>• <strong>Zero Sponsored Rankings:</strong> Nobody can buy priority placement, special badges, or banner features. Everything is ranked purely on utility.</p>
@@ -61,28 +60,8 @@ export const About: React.FC<AboutProps> = ({ onBack }) => {
             02 // WHO MAINTAINS THIS
           </h2>
           <p>
-            3DFX is maintained by a collective of freelance motion designers, colorists, and post-production engineers. We collaborate actively with the editing community to audit releases, report broken links, and document new workflows.
+            2dk is maintained by a collective of freelance motion designers, colorists, and post-production engineers. We collaborate actively with the editing community to audit releases, report broken links, and document new workflows.
           </p>
-        </div>
-
-        <div>
-          <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-white mb-3">
-            03 // CONTRIBUTE & REPORT
-          </h2>
-          <p>
-            If you've authored an open-source script, created a high-quality free asset library, or spotted an outdated link, join our Discord server. We review submissions within 24–48 hours.
-          </p>
-          <div className="mt-4">
-            <a
-              href={DISCORD_INVITE_URL}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="inline-flex items-center gap-2 rounded bg-white px-4 py-2 font-mono text-xs font-bold text-black hover:bg-zinc-200 transition-colors"
-            >
-              <span>JOIN THE 3DFX DISCORD</span>
-              <ExternalLink className="h-3.5 w-3.5" />
-            </a>
-          </div>
         </div>
       </div>
     </div>

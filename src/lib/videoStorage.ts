@@ -120,24 +120,91 @@ export async function fetchServerVideos(): Promise<ServerVideosResponse> {
   }
 }
 
-export async function uploadVideoToServer(id: string, fileOrBlob: Blob, filename?: string): Promise<{ success: boolean; url?: string; error?: string }> {
+export async function uploadVideoToServer(
+  id: string,
+  fileOrBlob: Blob,
+  filename?: string,
+  onProgress?: (percent: number) => void
+): Promise<{ success: boolean; url?: string; error?: string }> {
+  const name = filename || `${id}.mp4`;
+  const CHUNK_SIZE = 2 * 1024 * 1024; // 2MB chunks - fast, lightweight, and well below Nginx 32M limit
+  const totalSize = fileOrBlob.size;
+  const totalChunks = Math.max(1, Math.ceil(totalSize / CHUNK_SIZE));
+
   try {
-    const name = filename || `${id}.mp4`;
-    const res = await fetch(`/api/videos/upload?id=${encodeURIComponent(id)}&filename=${encodeURIComponent(name)}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': fileOrBlob.type || 'video/mp4',
-      },
-      body: fileOrBlob,
-    });
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      throw new Error(data.error || `Upload failed with status ${res.status}`);
+    for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+      const start = chunkIndex * CHUNK_SIZE;
+      const end = Math.min(start + CHUNK_SIZE, totalSize);
+      const chunk = fileOrBlob.slice(start, end);
+
+      let chunkSuccess = false;
+      let lastError = '';
+
+      // Retry up to 3 times per chunk with backoff
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          const res = await fetch(
+            `/api/videos/upload-chunk?id=${encodeURIComponent(id)}&filename=${encodeURIComponent(name)}&chunkIndex=${chunkIndex}&totalChunks=${totalChunks}`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/octet-stream',
+              },
+              body: chunk,
+            }
+          );
+
+          if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            throw new Error(errData.error || `HTTP ${res.status}`);
+          }
+
+          const resData = await res.json();
+          chunkSuccess = true;
+
+          if (onProgress) {
+            const progress = Math.round(((chunkIndex + 1) / totalChunks) * 100);
+            onProgress(progress);
+          }
+
+          if (chunkIndex === totalChunks - 1) {
+            return { success: true, url: resData.url };
+          }
+          break;
+        } catch (err: any) {
+          lastError = err?.message || 'Network error';
+          await new Promise((r) => setTimeout(r, 600 * (attempt + 1)));
+        }
+      }
+
+      if (!chunkSuccess) {
+        throw new Error(`Chunk ${chunkIndex + 1}/${totalChunks} failed: ${lastError}`);
+      }
     }
-    return await res.json();
-  } catch (err: any) {
-    console.error('Failed to upload video to server:', err);
-    return { success: false, error: err.message || 'Network error' };
+
+    return { success: true };
+  } catch (chunkErr: any) {
+    console.warn('Chunked upload encountered an error, trying direct fallback:', chunkErr);
+    try {
+      const res = await fetch(
+        `/api/videos/upload?id=${encodeURIComponent(id)}&filename=${encodeURIComponent(name)}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': fileOrBlob.type || 'video/mp4',
+          },
+          body: fileOrBlob,
+        }
+      );
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || `Upload failed with status ${res.status}`);
+      }
+      return await res.json();
+    } catch (err: any) {
+      console.warn('Failed to upload video to server:', err);
+      return { success: false, error: err.message || 'Network error' };
+    }
   }
 }
 

@@ -49,6 +49,12 @@ export const GuidesPage: React.FC<GuidesPageProps> = ({
         return;
       }
     }
+    if (guideId === 'unlicensed-fix-windows' || guideId === 'unlicensed-fix') {
+      if (onNavigatePage) {
+        onNavigatePage('unlicensed-fix');
+        return;
+      }
+    }
 
     const found =
       FEATURED_GUIDES.find((g) => g.id === guideId) ||

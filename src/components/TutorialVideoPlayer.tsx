@@ -15,9 +15,19 @@ import {
   HardDrive,
   MousePointer,
   Sparkles,
+  Upload,
+  RotateCw,
+  Check,
+  Layers,
 } from 'lucide-react';
 import { TutorialItem } from '../data/tutorialsData';
-import { fetchServerVideos } from '../lib/videoStorage';
+import {
+  fetchServerVideos,
+  getCustomVideo,
+  saveCustomVideo,
+  uploadVideoToServer,
+  deleteCustomVideo,
+} from '../lib/videoStorage';
 import {
   FLStudioWalkthrough,
   VegasProWalkthrough,
@@ -47,7 +57,14 @@ export const TutorialVideoPlayer: React.FC<TutorialVideoPlayerProps> = ({ tutori
   const [isMuted, setIsMuted] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState<1 | 1.25 | 1.5 | 2>(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [customVideoUrl, setCustomVideoUrl] = useState<string>(`/videos/${tutorial.id}.mp4`);
+  const [customVideoUrl, setCustomVideoUrl] = useState<string | null>(null);
+  const [videoSourceType, setVideoSourceType] = useState<
+    'server' | 'indexeddb' | 'youtube' | 'interactive'
+  >('interactive');
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const [uploadSuccessMessage, setUploadSuccessMessage] = useState<string | null>(null);
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [isYouTube, setIsYouTube] = useState<boolean>(false);
   const [youTubeEmbedUrl, setYouTubeEmbedUrl] = useState<string | null>(null);
 
@@ -55,6 +72,8 @@ export const TutorialVideoPlayer: React.FC<TutorialVideoPlayerProps> = ({ tutori
   const videoRef = useRef<HTMLVideoElement>(null);
   const animationRef = useRef<number | null>(null);
   const lastTickRef = useRef<number | null>(null);
+  const blobUrlRef = useRef<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const totalDuration = tutorial.duration;
 
@@ -75,15 +94,45 @@ export const TutorialVideoPlayer: React.FC<TutorialVideoPlayerProps> = ({ tutori
     return `${m}:${s < 10 ? '0' : ''}${s}`;
   };
 
-  // Check if an external link is set, otherwise default directly to the public hosted MP4 video
+  // Load video checking IndexedDB first, then server hosted videos/links, falling back to interactive walkthrough
   useEffect(() => {
     let isCancelled = false;
 
     async function loadVideo() {
+      // Clean up any previously created blob URL to free memory
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+        blobUrlRef.current = null;
+      }
+
       try {
+        // 1. Check local IndexedDB first (retains user's own uploaded videos even after page refresh)
+        const localVideo = await getCustomVideo(tutorial.id);
+        if (isCancelled) return;
+
+        if (localVideo && localVideo.blob) {
+          const blobUrl = URL.createObjectURL(localVideo.blob);
+          blobUrlRef.current = blobUrl;
+          setCustomVideoUrl(blobUrl);
+          setIsYouTube(false);
+          setVideoSourceType('indexeddb');
+
+          // Auto-sync to server in the background so all visitors can see it permanently
+          fetchServerVideos()
+            .then((serverData) => {
+              if (!serverData.hostedVideos?.includes(tutorial.id)) {
+                uploadVideoToServer(tutorial.id, localVideo.blob, localVideo.name).catch(() => {});
+              }
+            })
+            .catch(() => {});
+          return;
+        }
+
+        // 2. Query server for hosted videos and external video links
         const serverData = await fetchServerVideos();
         if (isCancelled) return;
 
+        // Check if external video link (e.g. YouTube embed or CDN URL)
         if (serverData.videoLinks && serverData.videoLinks[tutorial.id]?.url) {
           const linkUrl = serverData.videoLinks[tutorial.id].url!;
           const yt = parseYouTubeEmbed(linkUrl);
@@ -91,27 +140,110 @@ export const TutorialVideoPlayer: React.FC<TutorialVideoPlayerProps> = ({ tutori
             setIsYouTube(true);
             setYouTubeEmbedUrl(yt);
             setCustomVideoUrl(linkUrl);
+            setVideoSourceType('youtube');
             return;
           }
           setCustomVideoUrl(linkUrl);
           setIsYouTube(false);
+          setVideoSourceType('server');
           return;
         }
 
-        // Default public video stream for all visitors
-        setCustomVideoUrl(`/videos/${tutorial.id}.mp4`);
+        // Check if the server actually hosts this video file on disk
+        if (serverData.hostedVideos && serverData.hostedVideos.includes(tutorial.id)) {
+          setCustomVideoUrl(`/api/videos/${tutorial.id}`);
+          setIsYouTube(false);
+          setVideoSourceType('server');
+          return;
+        }
+
+        // 3. If no video file exists on disk or in database, cleanly default to interactive animated walkthrough
+        setCustomVideoUrl(null);
         setIsYouTube(false);
+        setVideoSourceType('interactive');
       } catch {
-        setCustomVideoUrl(`/videos/${tutorial.id}.mp4`);
+        if (!isCancelled) {
+          setCustomVideoUrl(null);
+          setIsYouTube(false);
+          setVideoSourceType('interactive');
+        }
       }
     }
 
+    // Reset playback position on tutorial change
+    setCurrentTime(0);
+    setIsPlaying(false);
     loadVideo();
 
     return () => {
       isCancelled = true;
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+        blobUrlRef.current = null;
+      }
     };
   }, [tutorial.id]);
+
+  // Handle uploading or replacing video file
+  const handleFileUpload = async (file: File) => {
+    try {
+      setIsUploading(true);
+      setUploadProgress(0);
+
+      // 1. Immediately save to IndexedDB so browser always retains it
+      await saveCustomVideo(tutorial.id, file, file.name);
+
+      // 2. Play immediately from local blob URL
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+      }
+      const blobUrl = URL.createObjectURL(file);
+      blobUrlRef.current = blobUrl;
+      setCustomVideoUrl(blobUrl);
+      setIsYouTube(false);
+      setVideoSourceType('indexeddb');
+      setIsPlaying(true);
+
+      // 3. Upload to server with chunking & progress tracking
+      const res = await uploadVideoToServer(tutorial.id, file, file.name, (percent) => {
+        setUploadProgress(percent);
+      });
+
+      if (res.success) {
+        setUploadSuccessMessage('Video saved & published for all visitors!');
+      } else {
+        setUploadSuccessMessage('Saved locally in browser');
+      }
+      setTimeout(() => setUploadSuccessMessage(null), 4000);
+    } catch (err: any) {
+      console.warn('Failed to save/upload video:', err);
+      setUploadSuccessMessage('Saved locally in browser');
+      setTimeout(() => setUploadSuccessMessage(null), 3000);
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(null);
+    }
+  };
+
+  // Reset to interactive walkthrough
+  const handleResetToWalkthrough = async () => {
+    try {
+      await deleteCustomVideo(tutorial.id);
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+        blobUrlRef.current = null;
+      }
+      setCustomVideoUrl(null);
+      setIsYouTube(false);
+      setVideoSourceType('interactive');
+      setCurrentTime(0);
+      setIsPlaying(false);
+      setUploadSuccessMessage('Reset to interactive walkthrough');
+      setTimeout(() => setUploadSuccessMessage(null), 3000);
+    } catch (err) {
+      console.error('Failed to reset video:', err);
+    }
+  };
 
   // Sync HTML5 video element if loaded
   useEffect(() => {
@@ -1165,7 +1297,7 @@ export const TutorialVideoPlayer: React.FC<TutorialVideoPlayerProps> = ({ tutori
       className="scroll-mt-24 mb-10 overflow-hidden rounded-xl border border-zinc-800 bg-[#0c0c0e] shadow-2xl transition-all"
     >
       {/* Player Top Header */}
-      <div className="flex items-center justify-between border-b border-zinc-800/90 bg-[#121215] px-4 py-3 sm:px-5">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-800/90 bg-[#121215] px-4 py-3 sm:px-5">
         <div className="flex items-center gap-2.5">
           <span className="flex h-2 w-2 relative">
             <span
@@ -1182,11 +1314,113 @@ export const TutorialVideoPlayer: React.FC<TutorialVideoPlayerProps> = ({ tutori
           <h4 className="font-sans text-sm font-semibold text-white tracking-tight">
             {tutorial.title}
           </h4>
+          <span className="rounded bg-zinc-800/80 px-2 py-0.5 font-mono text-[10px] text-zinc-300">
+            {videoSourceType === 'server'
+              ? 'Recorded MP4'
+              : videoSourceType === 'indexeddb'
+              ? 'Saved Custom Video'
+              : videoSourceType === 'youtube'
+              ? 'YouTube'
+              : 'Interactive Walkthrough'}
+          </span>
+        </div>
+
+        {/* Action buttons & feedback */}
+        <div className="flex items-center gap-2">
+          {uploadSuccessMessage && (
+            <span className="flex items-center gap-1 font-mono text-[11px] text-emerald-400 animate-fade-in">
+              <Check className="w-3 h-3" />
+              {uploadSuccessMessage}
+            </span>
+          )}
+
+          {videoSourceType === 'indexeddb' && (
+            <button
+              type="button"
+              onClick={handleResetToWalkthrough}
+              className="flex items-center gap-1 rounded bg-zinc-800 px-2 py-1 font-mono text-[10.5px] text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors"
+              title="Reset to interactive walkthrough"
+            >
+              <RotateCcw className="w-3 h-3" />
+              <span className="hidden sm:inline">Reset to Walkthrough</span>
+            </button>
+          )}
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="video/mp4,video/webm,video/quicktime"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleFileUpload(file);
+              // Reset input so same file can be selected again if needed
+              e.target.value = '';
+            }}
+          />
+
+          <button
+            type="button"
+            disabled={isUploading}
+            onClick={() => fileInputRef.current?.click()}
+            className="flex items-center gap-1.5 rounded border border-zinc-800 bg-zinc-900/90 px-2.5 py-1 text-xs font-medium text-zinc-300 hover:border-zinc-600 hover:text-white transition-colors cursor-pointer"
+            title="Upload custom .mp4 / .webm video file"
+          >
+            {isUploading ? (
+              <>
+                <RotateCw className="w-3 h-3 animate-spin text-white" />
+                <span className="text-[11px] font-mono">
+                  {uploadProgress !== null ? `${uploadProgress}%` : 'Saving...'}
+                </span>
+              </>
+            ) : (
+              <>
+                <Upload className="w-3 h-3 text-zinc-400" />
+                <span className="text-[11px]">
+                  {customVideoUrl ? 'Replace Video' : 'Upload Video'}
+                </span>
+              </>
+            )}
+          </button>
         </div>
       </div>
 
+      {/* Uploading progress bar */}
+      {isUploading && (
+        <div className="h-0.5 w-full bg-zinc-800 overflow-hidden">
+          <div
+            className="h-full bg-white transition-all duration-300 ease-out"
+            style={{ width: `${uploadProgress ?? 15}%` }}
+          />
+        </div>
+      )}
+
       {/* Video Screen Recording Canvas / Viewport */}
-      <div className="relative aspect-video w-full bg-[#050507] select-none flex flex-col justify-between overflow-hidden">
+      <div
+        onDragOver={(e) => {
+          e.preventDefault();
+          setIsDraggingOver(true);
+        }}
+        onDragLeave={() => setIsDraggingOver(false)}
+        onDrop={async (e) => {
+          e.preventDefault();
+          setIsDraggingOver(false);
+          const file = e.dataTransfer.files?.[0];
+          if (file && (file.type.startsWith('video/') || file.name.match(/\.(mp4|webm|mov)$/i))) {
+            await handleFileUpload(file);
+          }
+        }}
+        className="relative aspect-video w-full bg-[#050507] select-none flex flex-col justify-between overflow-hidden"
+      >
+        {/* Drag & Drop Overlay */}
+        {isDraggingOver && (
+          <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/85 border-2 border-dashed border-white/80 p-6 text-center">
+            <Upload className="w-10 h-10 text-white mb-2 animate-bounce" />
+            <p className="font-semibold text-white text-sm">Drop video file here</p>
+            <p className="text-zinc-400 text-xs mt-1">Supports MP4, WebM, or MOV — saves to project folder and publishes for all visitors</p>
+          </div>
+        )}
+
         {/* If YouTube video embed */}
         {isYouTube && youTubeEmbedUrl ? (
           <iframe
@@ -1203,6 +1437,17 @@ export const TutorialVideoPlayer: React.FC<TutorialVideoPlayerProps> = ({ tutori
             className="w-full h-full object-contain bg-black"
             onTimeUpdate={() => {
               if (videoRef.current) setCurrentTime(videoRef.current.currentTime);
+            }}
+            onError={() => {
+              console.warn(
+                `Video source failed to load for ${tutorial.id}, falling back to interactive walkthrough`
+              );
+              if (blobUrlRef.current) {
+                URL.revokeObjectURL(blobUrlRef.current);
+                blobUrlRef.current = null;
+              }
+              setCustomVideoUrl(null);
+              setVideoSourceType('interactive');
             }}
             onEnded={() => setIsPlaying(false)}
             onClick={() => setIsPlaying(!isPlaying)}

@@ -56,7 +56,7 @@ export const CATEGORIES: Category[] = [
     id: 'new-drops',
     title: 'New Drops',
     description:
-      'Latest software releases and updates, posted live from Discord.',
+      'Latest software releases and updates added to the catalog.',
     icon: 'cloud-download',
     count: '18 UPDATES',
     section: 'SEC.05 // LOG',

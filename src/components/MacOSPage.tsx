@@ -13,10 +13,8 @@ import {
   Wrench,
   Cpu,
   ShieldAlert,
-  MessageSquare,
   ShieldCheck,
 } from 'lucide-react';
-import { DISCORD_INVITE_URL } from '../lib/constants';
 import { MACOS_SECTIONS_DATA } from '../data/macosData';
 
 interface MacOSPageProps {
@@ -257,19 +255,8 @@ export const MacOSPage: React.FC<MacOSPageProps> = ({
               </p>
               <div className="pl-4 pt-1 flex flex-wrap items-center gap-2 text-xs">
                 <span className="text-zinc-400">
-                  Every download is a password-protected .7z archive. The password is in our
+                  Every download is a password-protected .7z archive. Default password:
                 </span>
-                <a
-                  href={DISCORD_INVITE_URL}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="inline-flex items-center gap-1.5 rounded border border-zinc-700 bg-zinc-900 px-2.5 py-0.5 font-mono text-xs font-bold text-white hover:border-white transition-colors"
-                  title="Find password on Discord"
-                >
-                  <span>Discord</span>
-                  <ExternalLink className="h-3 w-3 text-zinc-400" />
-                </a>
-                <span className="text-zinc-500">or default</span>
                 <div className="inline-flex items-center gap-1.5 rounded border border-zinc-700 bg-zinc-900 px-2.5 py-0.5 font-mono text-xs font-bold text-white">
                   <span>flame</span>
                   <button
@@ -491,28 +478,6 @@ export const MacOSPage: React.FC<MacOSPageProps> = ({
                 </section>
               ))
             )}
-
-            {/* NEED A MAC RELEASE CALLOUT */}
-            <div className="mt-12 rounded-md border border-zinc-800 bg-[#121212] p-6 text-center space-y-3 shadow-sm">
-              <h3 className="font-serif text-xl sm:text-2xl text-white">
-                Need a Mac release that is not here?
-              </h3>
-              <p className="max-w-xl mx-auto text-xs sm:text-sm text-zinc-400 leading-relaxed">
-                Ask in Discord with the app name, MacOS version, and whether your Mac is Intel or Apple Silicon. That compatibility context matters before we mirror a build.
-              </p>
-              <div className="pt-2">
-                <a
-                  href={DISCORD_INVITE_URL}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="inline-flex items-center gap-2 rounded border border-white bg-white px-5 py-2.5 font-mono text-xs font-semibold text-black hover:bg-zinc-200 transition-colors"
-                >
-                  <MessageSquare className="h-4 w-4 text-black" />
-                  <span>Request on Discord</span>
-                  <ExternalLink className="h-3.5 w-3.5 opacity-70 text-black" />
-                </a>
-              </div>
-            </div>
           </main>
 
           {/* RIGHT COLUMN: MACOS STATS & GUIDES */}
@@ -850,18 +815,18 @@ export const MacOSPage: React.FC<MacOSPageProps> = ({
               Archive Password Notice
             </h4>
             <p className="mt-1 text-xs text-zinc-400 leading-relaxed">
-              All downloads are password-protected .7z archives. Join our Discord to find the password and request support.
+              All downloads are password-protected .7z archives. Default archive password:{' '}
+              <span className="font-mono font-bold text-white">flame</span>
             </p>
             <div className="mt-2.5 flex items-center gap-2">
-              <a
-                href={DISCORD_INVITE_URL}
-                target="_blank"
-                rel="noreferrer noopener"
+              <button
+                type="button"
+                onClick={handleCopyPassword}
                 className="inline-flex items-center gap-1.5 rounded bg-white px-3 py-1 text-xs font-semibold text-black hover:bg-zinc-200 transition-colors"
               >
-                <span>Find Password on Discord</span>
-                <ExternalLink className="h-3 w-3" />
-              </a>
+                {copiedPassword ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                <span>{copiedPassword ? 'Copied!' : 'Copy Password'}</span>
+              </button>
               <button
                 type="button"
                 onClick={() => setShowPasswordToast(false)}

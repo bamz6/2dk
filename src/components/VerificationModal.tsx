@@ -1,6 +1,6 @@
 import React from 'react';
-import { X, ShieldCheck, CheckCircle2, AlertTriangle, FileCode2, ExternalLink } from 'lucide-react';
-import { LAST_VERIFIED_DATE, DISCORD_INVITE_URL } from '../lib/constants';
+import { X, ShieldCheck, CheckCircle2, AlertTriangle, FileCode2 } from 'lucide-react';
+import { LAST_VERIFIED_DATE } from '../lib/constants';
 
 interface VerificationModalProps {
   isOpen: boolean;
@@ -42,7 +42,7 @@ export const VerificationModal: React.FC<VerificationModalProps> = ({ isOpen, on
               How We Audit & Verify Resources
             </h4>
             <p>
-              3DFX does not re-host executables or operate mirror download farms. Instead, every resource cataloged on this site is manually vetted according to strict anti-malware and source-authenticity rules:
+              2dk does not re-host executables or operate mirror download farms. Instead, every resource cataloged on this site is manually vetted according to strict anti-malware and source-authenticity rules:
             </p>
           </div>
 
@@ -80,14 +80,6 @@ export const VerificationModal: React.FC<VerificationModalProps> = ({ isOpen, on
 
           <div className="border-t border-[#1F1F1F] pt-4 font-mono text-[11px] text-[#71717A] flex items-center justify-between">
             <span>LAST MANUAL AUDIT: {LAST_VERIFIED_DATE}</span>
-            <a
-              href={DISCORD_INVITE_URL}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="inline-flex items-center gap-1 text-white hover:underline underline-offset-4"
-            >
-              Report an issue <ExternalLink className="h-3 w-3" />
-            </a>
           </div>
         </div>
 

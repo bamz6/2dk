@@ -21,6 +21,7 @@ import { GuidesPage } from './components/GuidesPage';
 import { VisualTutorials } from './components/VisualTutorials';
 import { ExtractGuide } from './components/ExtractGuide';
 import { InstallGuide } from './components/InstallGuide';
+import { UnlicensedFixGuide } from './components/UnlicensedFixGuide';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<PageId>('home');
@@ -40,6 +41,7 @@ export default function App() {
       'beginners-guide',
       'extract-guide',
       'install-guide',
+      'unlicensed-fix',
       'tutorials',
       'guides',
       'new-drops',
@@ -194,6 +196,14 @@ export default function App() {
         return (
           <InstallGuide
             onBack={() => navigateTo('home')}
+            onNavigatePage={(page) => navigateTo(page as PageId)}
+          />
+        );
+
+      case 'unlicensed-fix':
+        return (
+          <UnlicensedFixGuide
+            onBack={() => navigateTo('guides')}
             onNavigatePage={(page) => navigateTo(page as PageId)}
           />
         );
